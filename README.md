@@ -4,9 +4,6 @@
   <a href="https://terminators2025.github.io/RealMirror.github.io/">
     <img src="https://img.shields.io/badge/GitHub-grey?logo=GitHub" alt="GitHub">
   </a>
-  <a href="https://arxiv.org/abs/2509.14687">
-    <img src="https://img.shields.io/badge/Paper-2507.08364-yellow" alt="arXiv">
-  </a>
 </div>
 
 
