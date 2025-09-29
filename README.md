@@ -2,7 +2,7 @@
 
 <div align="center">
   <a href="https://terminators2025.github.io/RealMirror.github.io/">
-    <img src="[https://img.shields.io/badge/GitHub-grey?logo=GitHub](https://img.shields.io/badge/github.io-181717?logo=github&logoColor=white&labelColor=555)" alt="GitHub">
+    <img src="https://img.shields.io/badge/github.io-181717?logo=github&logoColor=white&labelColor=555" alt="GitHub">
   </a>
 </div>
 
