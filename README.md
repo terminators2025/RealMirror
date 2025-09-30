@@ -10,13 +10,13 @@
 **Before October 15, 2025**
  - [ ] Inference code
  - [ ] Evaluation code
- - [ ] Training code
- - [ ] Datasets
  - [ ] Agibot A2 robot model
  - [ ] Scene assets
  - [ ] Checkpoints
 
 **Before October 30, 2025**
+ - [ ] Training code
+ - [ ] Datasets
  - [ ] Data collection
  - [ ] Teleoperation
  - [ ] Toolchains
