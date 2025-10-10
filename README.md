@@ -248,3 +248,7 @@ $isaac_sim_dir/python.sh script/eval.py \
 ```
 
 Note： Add --headless flag for run without GUI and  saves the results to the runs/eval directory.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=Date)](https://www.star-history.com/#terminators2025/RealMirror&Date)
