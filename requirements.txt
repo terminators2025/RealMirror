@@ -1,0 +1,35 @@
+cmake>=3.29.0.1
+datasets>=2.19.0
+deepdiff>=7.0.1
+diffusers>=0.27.2
+draccus==0.10.0
+einops>=0.8.0
+flask>=3.0.3
+gdown>=5.1.0
+gymnasium==0.29.1 # TODO(rcadene, aliberts): Make gym 1.0.0 work
+h5py>=3.10.0
+huggingface-hub[hf-transfer,cli]>=0.27.1 ; python_version < '4.0'
+imageio[ffmpeg]>=2.34.0
+jsonlines>=4.0.0
+numba>=0.59.0
+omegaconf>=2.3.0
+opencv-python-headless>=4.9.0
+packaging>=24.2
+av>=14.2.0
+pymunk>=6.6.0,<7.0.0
+pynput>=1.7.7
+pyserial>=3.5
+pyzmq>=26.2.1
+rerun-sdk>=0.21.0
+scipy>=1.14.0
+termcolor>=2.4.0
+torch>=2.2.1
+torchcodec>=0.2.1; sys_platform != 'win32' and (sys_platform != 'linux' or (platform_machine != 'aarch64' and platform_machine != 'arm64' and platform_machine != 'armv7l')) and (sys_platform != 'darwin' or platform_machine != 'x86_64')
+torchvision>=0.21.0
+wandb>=0.16.3
+zarr>=2.17.0
+transformers==4.52.4
+num2words>=0.5.14
+accelerate>=1.7.0
+safetensors>=0.4.3
+colorama

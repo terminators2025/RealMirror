@@ -1,0 +1,839 @@
+diff --git a/lerobot/common/policies/act/configuration_act.py b/lerobot/common/policies/act/configuration_act.py
+index 7a5819b7..3e4cc4ec 100644
+--- a/lerobot/common/policies/act/configuration_act.py
++++ b/lerobot/common/policies/act/configuration_act.py
+@@ -92,8 +92,8 @@ class ACTConfig(PreTrainedConfig):
+ 
+     # Input / output structure.
+     n_obs_steps: int = 1
+-    chunk_size: int = 100
+-    n_action_steps: int = 100
++    chunk_size: int = 30
++    n_action_steps: int = 30
+ 
+     normalization_mapping: dict[str, NormalizationMode] = field(
+         default_factory=lambda: {
+@@ -145,11 +145,6 @@ class ACTConfig(PreTrainedConfig):
+             raise ValueError(
+                 f"`vision_backbone` must be one of the ResNet variants. Got {self.vision_backbone}."
+             )
+-        if self.temporal_ensemble_coeff is not None and self.n_action_steps > 1:
+-            raise NotImplementedError(
+-                "`n_action_steps` must be 1 when using temporal ensembling. This is "
+-                "because the policy needs to be queried every step to compute the ensembled action."
+-            )
+         if self.n_action_steps > self.chunk_size:
+             raise ValueError(
+                 f"The chunk size is the upper bound for the number of action steps per model invocation. Got "
+diff --git a/lerobot/common/policies/act/modeling_act.py b/lerobot/common/policies/act/modeling_act.py
+index e7e74bf3..23515328 100644
+--- a/lerobot/common/policies/act/modeling_act.py
++++ b/lerobot/common/policies/act/modeling_act.py
+@@ -74,7 +74,7 @@ class ACTPolicy(PreTrainedPolicy):
+         self.model = ACT(config)
+ 
+         if config.temporal_ensemble_coeff is not None:
+-            self.temporal_ensembler = ACTTemporalEnsembler(config.temporal_ensemble_coeff, config.chunk_size)
++            self.temporal_ensembler = ACTTemporalEnsembler(config.temporal_ensemble_coeff, config.n_action_steps)
+ 
+         self.reset()
+ 
+@@ -107,13 +107,16 @@ class ACTPolicy(PreTrainedPolicy):
+             self._action_queue = deque([], maxlen=self.config.n_action_steps)
+ 
+     @torch.no_grad
+-    def select_action(self, batch: dict[str, Tensor]) -> Tensor:
++    def select_action(self, batch: dict[str, Tensor], custom: bool = False) -> Tensor:
+         """Select a single action given environment observations.
+ 
+         This method wraps `select_actions` in order to return one action at a time for execution in the
+         environment. It works by managing the actions in a queue and only calling `select_actions` when the
+         queue is empty.
+         """
++
++        if custom: return self.select_action_custom(batch)
++
+         self.eval()
+ 
+         batch = self.normalize_inputs(batch)
+@@ -141,6 +144,34 @@ class ACTPolicy(PreTrainedPolicy):
+             # effectively has shape (n_action_steps, batch_size, *), hence the transpose.
+             self._action_queue.extend(actions.transpose(0, 1))
+         return self._action_queue.popleft()
++    
++    @torch.no_grad
++    def select_action_custom(self, batch: dict[str, Tensor]) -> Tensor:
++        """Select a single action given environment observations.
++
++        This method wraps `select_actions` in order to return all actions at a time for execution in the
++        environment.
++        """
++        self.eval()
++
++        batch = self.normalize_inputs(batch)
++        if self.config.image_features:
++            batch = dict(batch)  # shallow copy so that adding a key doesn't modify the original
++            batch["observation.images"] = [batch[key] for key in self.config.image_features]
++        
++        # query the policy.
++        actions = self.model(batch)[0][:, : self.config.n_action_steps]
++
++        # TODO(rcadene): make _forward return output dictionary?
++        actions = self.unnormalize_outputs({"action": actions})["action"]
++
++        # If we are doing temporal ensembling, do online updates where we keep track of the number of actions
++        # we are ensembling over.
++        if self.config.temporal_ensemble_coeff is not None:
++            action = self.temporal_ensembler.update(actions)
++            return action
++
++        return actions
+ 
+     def forward(self, batch: dict[str, Tensor]) -> tuple[Tensor, dict]:
+         """Run the batch through the model and compute the loss for training or validation."""
+diff --git a/lerobot/common/policies/diffusion/configuration_diffusion.py b/lerobot/common/policies/diffusion/configuration_diffusion.py
+index c8841f06..ecad235e 100644
+--- a/lerobot/common/policies/diffusion/configuration_diffusion.py
++++ b/lerobot/common/policies/diffusion/configuration_diffusion.py
+@@ -104,9 +104,9 @@ class DiffusionConfig(PreTrainedConfig):
+     """
+ 
+     # Inputs / output structure.
+-    n_obs_steps: int = 2
+-    horizon: int = 16
+-    n_action_steps: int = 8
++    n_obs_steps: int = 1
++    horizon: int = 32
++    n_action_steps: int = 16
+ 
+     normalization_mapping: dict[str, NormalizationMode] = field(
+         default_factory=lambda: {
+@@ -118,15 +118,15 @@ class DiffusionConfig(PreTrainedConfig):
+ 
+     # The original implementation doesn't sample frames for the last 7 steps,
+     # which avoids excessive padding and leads to improved training results.
+-    drop_n_last_frames: int = 7  # horizon - n_action_steps - n_obs_steps + 1
++    drop_n_last_frames: int = 16  # horizon - n_action_steps - n_obs_steps + 1
+ 
+     # Architecture / modeling.
+     # Vision backbone.
+     vision_backbone: str = "resnet18"
+-    crop_shape: tuple[int, int] | None = (84, 84)
+-    crop_is_random: bool = True
+-    pretrained_backbone_weights: str | None = None
+-    use_group_norm: bool = True
++    crop_shape: tuple[int, int] | None = None
++    crop_is_random: bool = False
++    pretrained_backbone_weights: str | None = "ResNet18_Weights.IMAGENET1K_V1" 
++    use_group_norm: bool = False
+     spatial_softmax_num_keypoints: int = 32
+     use_separate_rgb_encoder_per_camera: bool = False
+     # Unet.
+@@ -151,6 +151,10 @@ class DiffusionConfig(PreTrainedConfig):
+     # Loss computation
+     do_mask_loss_for_padding: bool = False
+ 
++    # Inference.
++    # Note: the value used when temporal ensembling is enabled is 0.01.
++    temporal_ensemble_coeff: float | None = None
++
+     # Training presets
+     optimizer_lr: float = 1e-4
+     optimizer_betas: tuple = (0.95, 0.999)
+diff --git a/lerobot/common/policies/diffusion/modeling_diffusion.py b/lerobot/common/policies/diffusion/modeling_diffusion.py
+index 446e2cb6..f898f55a 100644
+--- a/lerobot/common/policies/diffusion/modeling_diffusion.py
++++ b/lerobot/common/policies/diffusion/modeling_diffusion.py
+@@ -83,6 +83,9 @@ class DiffusionPolicy(PreTrainedPolicy):
+ 
+         self.diffusion = DiffusionModel(config)
+ 
++        if config.temporal_ensemble_coeff is not None:
++            self.temporal_ensembler = DiffusionTemporalEnsembler(config.temporal_ensemble_coeff, config.n_action_steps)
++
+         self.reset()
+ 
+     def get_optim_params(self) -> dict:
+@@ -90,17 +93,24 @@ class DiffusionPolicy(PreTrainedPolicy):
+ 
+     def reset(self):
+         """Clear observation and action queues. Should be called on `env.reset()`"""
+-        self._queues = {
+-            "observation.state": deque(maxlen=self.config.n_obs_steps),
+-            "action": deque(maxlen=self.config.n_action_steps),
+-        }
++        if self.config.temporal_ensemble_coeff is not None:
++            self.temporal_ensembler.reset()
++            self._queues = {
++                "observation.state": deque(maxlen=self.config.n_obs_steps),
++            }
++        else:
++            self._queues = {
++                "observation.state": deque(maxlen=self.config.n_obs_steps),
++                "action": deque(maxlen=self.config.n_action_steps),
++            }
++
+         if self.config.image_features:
+             self._queues["observation.images"] = deque(maxlen=self.config.n_obs_steps)
+         if self.config.env_state_feature:
+             self._queues["observation.environment_state"] = deque(maxlen=self.config.n_obs_steps)
+ 
+     @torch.no_grad
+-    def select_action(self, batch: dict[str, Tensor]) -> Tensor:
++    def select_action(self, batch: dict[str, Tensor], custom: bool = False) -> Tensor:
+         """Select a single action given environment observations.
+ 
+         This method handles caching a history of observations and an action trajectory generated by the
+@@ -121,6 +131,9 @@ class DiffusionPolicy(PreTrainedPolicy):
+         "horizon" may not the best name to describe what the variable actually means, because this period is
+         actually measured from the first observation which (if `n_obs_steps` > 1) happened in the past.
+         """
++
++        if custom: return self.select_action_custom(batch)
++
+         batch = self.normalize_inputs(batch)
+         if self.config.image_features:
+             batch = dict(batch)  # shallow copy so that adding a key doesn't modify the original
+@@ -143,6 +156,36 @@ class DiffusionPolicy(PreTrainedPolicy):
+         action = self._queues["action"].popleft()
+         return action
+ 
++    @torch.no_grad
++    def select_action_custom(self, batch: dict[str, Tensor]) -> Tensor:
++        """Select a single action given environment observations.
++
++        This method wraps `select_actions` in order to return all actions at a time for execution in the
++        environment.
++        """
++
++        batch = self.normalize_inputs(batch)
++        if self.config.image_features:
++            batch = dict(batch)  # shallow copy so that adding a key doesn't modify the original
++            batch["observation.images"] = torch.stack(
++                [batch[key] for key in self.config.image_features], dim=-4
++            )
++        # Note: It's important that this happens after stacking the images into a single key.
++        self._queues = populate_queues(self._queues, batch)
++
++        # stack n latest observations from the queue
++        batch = {k: torch.stack(list(self._queues[k]), dim=1) for k in batch if k in self._queues}
++        actions = self.diffusion.generate_actions(batch)
++
++        # TODO(rcadene): make above methods return output dictionary?
++        actions = self.unnormalize_outputs({"action": actions})["action"]
++
++        if self.config.temporal_ensemble_coeff is not None:                   
++            action = self.temporal_ensembler.update(actions)
++            return action
++
++        return actions
++
+     def forward(self, batch: dict[str, Tensor]) -> tuple[Tensor, None]:
+         """Run the batch through the model and compute the loss for training or validation."""
+         batch = self.normalize_inputs(batch)
+@@ -157,6 +200,97 @@ class DiffusionPolicy(PreTrainedPolicy):
+         return loss, None
+ 
+ 
++class DiffusionTemporalEnsembler:
++    def __init__(self, temporal_ensemble_coeff: float, chunk_size: int) -> None:
++        """Temporal ensembling as described in Algorithm 2 of https://huggingface.co/papers/2304.13705.
++
++        The weights are calculated as wᵢ = exp(-temporal_ensemble_coeff * i) where w₀ is the oldest action.
++        They are then normalized to sum to 1 by dividing by Σwᵢ. Here's some intuition around how the
++        coefficient works:
++            - Setting it to 0 uniformly weighs all actions.
++            - Setting it positive gives more weight to older actions.
++            - Setting it negative gives more weight to newer actions.
++        NOTE: The default value for `temporal_ensemble_coeff` used by the original ACT work is 0.01. This
++        results in older actions being weighed more highly than newer actions (the experiments documented in
++        https://github.com/huggingface/lerobot/pull/319 hint at why highly weighing new actions might be
++        detrimental: doing so aggressively may diminish the benefits of action chunking).
++
++        Here we use an online method for computing the average rather than caching a history of actions in
++        order to compute the average offline. For a simple 1D sequence it looks something like:
++
++        ```
++        import torch
++
++        seq = torch.linspace(8, 8.5, 100)
++        print(seq)
++
++        m = 0.01
++        exp_weights = torch.exp(-m * torch.arange(len(seq)))
++        print(exp_weights)
++
++        # Calculate offline
++        avg = (exp_weights * seq).sum() / exp_weights.sum()
++        print("offline", avg)
++
++        # Calculate online
++        for i, item in enumerate(seq):
++            if i == 0:
++                avg = item
++                continue
++            avg *= exp_weights[:i].sum()
++            avg += item * exp_weights[i]
++            avg /= exp_weights[:i+1].sum()
++        print("online", avg)
++        ```
++        """
++        self.chunk_size = chunk_size
++        self.ensemble_weights = torch.exp(-temporal_ensemble_coeff * torch.arange(chunk_size))
++        self.ensemble_weights_cumsum = torch.cumsum(self.ensemble_weights, dim=0)
++        self.reset()
++
++    def reset(self):
++        """Resets the online computation variables."""
++        self.ensembled_actions = None
++        # (chunk_size,) count of how many actions are in the ensemble for each time step in the sequence.
++        self.ensembled_actions_count = None
++
++    def update(self, actions: Tensor) -> Tensor:
++        """
++        Takes a (batch, chunk_size, action_dim) sequence of actions, update the temporal ensemble for all
++        time steps, and pop/return the next batch of actions in the sequence.
++        """
++        self.ensemble_weights = self.ensemble_weights.to(device=actions.device)
++        self.ensemble_weights_cumsum = self.ensemble_weights_cumsum.to(device=actions.device)
++        if self.ensembled_actions is None:
++            # Initializes `self._ensembled_action` to the sequence of actions predicted during the first
++            # time step of the episode.
++            self.ensembled_actions = actions.clone()
++            # Note: The last dimension is unsqueeze to make sure we can broadcast properly for tensor
++            # operations later.
++            self.ensembled_actions_count = torch.ones(
++                (self.chunk_size, 1), dtype=torch.long, device=self.ensembled_actions.device
++            )
++        else:
++            # self.ensembled_actions will have shape (batch_size, chunk_size - 1, action_dim). Compute
++            # the online update for those entries.
++            self.ensembled_actions *= self.ensemble_weights_cumsum[self.ensembled_actions_count - 1]
++            self.ensembled_actions += actions[:, :-1] * self.ensemble_weights[self.ensembled_actions_count]
++            self.ensembled_actions /= self.ensemble_weights_cumsum[self.ensembled_actions_count]
++            self.ensembled_actions_count = torch.clamp(self.ensembled_actions_count + 1, max=self.chunk_size)
++            # The last action, which has no prior online average, needs to get concatenated onto the end.
++            self.ensembled_actions = torch.cat([self.ensembled_actions, actions[:, -1:]], dim=1)
++            self.ensembled_actions_count = torch.cat(
++                [self.ensembled_actions_count, torch.ones_like(self.ensembled_actions_count[-1:])]
++            )
++        # "Consume" the first action.
++        action, self.ensembled_actions, self.ensembled_actions_count = (
++            self.ensembled_actions[:, 0],
++            self.ensembled_actions[:, 1:],
++            self.ensembled_actions_count[1:],
++        )
++        return action
++
++
+ def _make_noise_scheduler(name: str, **kwargs: dict) -> DDPMScheduler | DDIMScheduler:
+     """
+     Factory for noise scheduler instances of the requested type. All kwargs are passed
+diff --git a/lerobot/common/policies/pi0/configuration_pi0.py b/lerobot/common/policies/pi0/configuration_pi0.py
+index 8c7cc130..f4aa0977 100644
+--- a/lerobot/common/policies/pi0/configuration_pi0.py
++++ b/lerobot/common/policies/pi0/configuration_pi0.py
+@@ -27,8 +27,8 @@ from lerobot.configs.types import FeatureType, NormalizationMode, PolicyFeature
+ class PI0Config(PreTrainedConfig):
+     # Input / output structure.
+     n_obs_steps: int = 1
+-    chunk_size: int = 50
+-    n_action_steps: int = 50
++    chunk_size: int = 30
++    n_action_steps: int = 30
+ 
+     normalization_mapping: dict[str, NormalizationMode] = field(
+         default_factory=lambda: {
+@@ -68,13 +68,17 @@ class PI0Config(PreTrainedConfig):
+ 
+     # Attention utils
+     use_cache: bool = True
+-    attention_implementation: str = "eager"  # or fa2, flex
++    attention_implementation: str = "eager"  # eager, or fa2, flex
+ 
+     # Finetuning settings
+-    freeze_vision_encoder: bool = True
++    freeze_vision_encoder: bool = False
+     train_expert_only: bool = False
+     train_state_proj: bool = True
+ 
++    # Inference.
++    # Note: the value used when temporal ensembling is enabled is 0.01.
++    temporal_ensemble_coeff: float | None = None
++
+     # Training presets
+     optimizer_lr: float = 2.5e-5
+     optimizer_betas: tuple[float, float] = (0.9, 0.95)
+diff --git a/lerobot/common/policies/pi0/modeling_pi0.py b/lerobot/common/policies/pi0/modeling_pi0.py
+index 1d8a5055..e638071e 100644
+--- a/lerobot/common/policies/pi0/modeling_pi0.py
++++ b/lerobot/common/policies/pi0/modeling_pi0.py
+@@ -247,27 +247,36 @@ class PI0Policy(PreTrainedPolicy):
+         self.unnormalize_outputs = Unnormalize(
+             config.output_features, config.normalization_mapping, dataset_stats
+         )
+-
+-        self.language_tokenizer = AutoTokenizer.from_pretrained("google/paligemma-3b-pt-224")
++        # self.language_tokenizer = AutoTokenizer.from_pretrained("google/paligemma-3b-pt-224")
++        self.language_tokenizer = AutoTokenizer.from_pretrained("paligemma-3b-pt-224")
+         self.model = PI0FlowMatching(config)
+ 
++        if config.temporal_ensemble_coeff is not None:
++            self.temporal_ensembler = PI0TemporalEnsembler(config.temporal_ensemble_coeff, config.n_action_steps)
++
+         self.reset()
+ 
+     def reset(self):
+         """This should be called whenever the environment is reset."""
+-        self._action_queue = deque([], maxlen=self.config.n_action_steps)
++        if self.config.temporal_ensemble_coeff is not None:
++            self.temporal_ensembler.reset()
++        else:
++            self._action_queue = deque([], maxlen=self.config.n_action_steps)
+ 
+     def get_optim_params(self) -> dict:
+         return self.parameters()
+ 
+     @torch.no_grad
+-    def select_action(self, batch: dict[str, Tensor], noise: Tensor | None = None) -> Tensor:
++    def select_action(self, batch: dict[str, Tensor], noise: Tensor | None = None, custom: bool = False) -> Tensor:
+         """Select a single action given environment observations.
+ 
+         This method wraps `select_actions` in order to return one action at a time for execution in the
+         environment. It works by managing the actions in a queue and only calling `select_actions` when the
+         queue is empty.
+         """
++        
++        if custom: return self.select_action_custom(batch, noise)
++        
+         self.eval()
+ 
+         if self.config.adapt_to_pi_aloha:
+@@ -299,6 +308,45 @@ class PI0Policy(PreTrainedPolicy):
+             # effectively has shape (n_action_steps, batch_size, *), hence the transpose.
+             self._action_queue.extend(actions.transpose(0, 1))
+         return self._action_queue.popleft()
++    
++    @torch.no_grad
++    def select_action_custom(self, batch: dict[str, Tensor], noise: Tensor | None = None) -> Tensor:
++        """Select a single action given environment observations.
++
++        This method wraps `select_actions` in order to return one action at a time for execution in the
++        environment. It works by managing the actions in a queue and only calling `select_actions` when the
++        queue is empty.
++        """
++        self.eval()
++
++        if self.config.adapt_to_pi_aloha:
++            batch[OBS_STATE] = self._pi_aloha_decode_state(batch[OBS_STATE])
++
++        batch = self.normalize_inputs(batch)
++
++        # query the policy.
++        images, img_masks = self.prepare_images(batch)
++        state = self.prepare_state(batch)
++        lang_tokens, lang_masks = self.prepare_language(batch)
++
++        actions = self.model.sample_actions(
++            images, img_masks, lang_tokens, lang_masks, state, noise=noise
++        )
++
++        # Unpad actions
++        original_action_dim = self.config.action_feature.shape[0]
++        actions = actions[:, :, :original_action_dim]
++
++        actions = self.unnormalize_outputs({"action": actions})["action"]
++
++        if self.config.adapt_to_pi_aloha:
++            actions = self._pi_aloha_encode_actions(actions)
++
++        if self.config.temporal_ensemble_coeff is not None:
++            action = self.temporal_ensembler.update(actions)
++            return action
++
++        return actions
+ 
+     def forward(self, batch: dict[str, Tensor], noise=None, time=None) -> tuple[Tensor, dict[str, Tensor]]:
+         """Do a full training forward pass to compute the loss"""
+@@ -436,6 +484,97 @@ class PI0Policy(PreTrainedPolicy):
+         return actions
+ 
+ 
++class PI0TemporalEnsembler:
++    def __init__(self, temporal_ensemble_coeff: float, chunk_size: int) -> None:
++        """Temporal ensembling as described in Algorithm 2 of https://huggingface.co/papers/2304.13705.
++
++        The weights are calculated as wᵢ = exp(-temporal_ensemble_coeff * i) where w₀ is the oldest action.
++        They are then normalized to sum to 1 by dividing by Σwᵢ. Here's some intuition around how the
++        coefficient works:
++            - Setting it to 0 uniformly weighs all actions.
++            - Setting it positive gives more weight to older actions.
++            - Setting it negative gives more weight to newer actions.
++        NOTE: The default value for `temporal_ensemble_coeff` used by the original ACT work is 0.01. This
++        results in older actions being weighed more highly than newer actions (the experiments documented in
++        https://github.com/huggingface/lerobot/pull/319 hint at why highly weighing new actions might be
++        detrimental: doing so aggressively may diminish the benefits of action chunking).
++
++        Here we use an online method for computing the average rather than caching a history of actions in
++        order to compute the average offline. For a simple 1D sequence it looks something like:
++
++        ```
++        import torch
++
++        seq = torch.linspace(8, 8.5, 100)
++        print(seq)
++
++        m = 0.01
++        exp_weights = torch.exp(-m * torch.arange(len(seq)))
++        print(exp_weights)
++
++        # Calculate offline
++        avg = (exp_weights * seq).sum() / exp_weights.sum()
++        print("offline", avg)
++
++        # Calculate online
++        for i, item in enumerate(seq):
++            if i == 0:
++                avg = item
++                continue
++            avg *= exp_weights[:i].sum()
++            avg += item * exp_weights[i]
++            avg /= exp_weights[:i+1].sum()
++        print("online", avg)
++        ```
++        """
++        self.chunk_size = chunk_size
++        self.ensemble_weights = torch.exp(-temporal_ensemble_coeff * torch.arange(chunk_size))
++        self.ensemble_weights_cumsum = torch.cumsum(self.ensemble_weights, dim=0)
++        self.reset()
++
++    def reset(self):
++        """Resets the online computation variables."""
++        self.ensembled_actions = None
++        # (chunk_size,) count of how many actions are in the ensemble for each time step in the sequence.
++        self.ensembled_actions_count = None
++
++    def update(self, actions: Tensor) -> Tensor:
++        """
++        Takes a (batch, chunk_size, action_dim) sequence of actions, update the temporal ensemble for all
++        time steps, and pop/return the next batch of actions in the sequence.
++        """
++        self.ensemble_weights = self.ensemble_weights.to(device=actions.device)
++        self.ensemble_weights_cumsum = self.ensemble_weights_cumsum.to(device=actions.device)
++        if self.ensembled_actions is None:
++            # Initializes `self._ensembled_action` to the sequence of actions predicted during the first
++            # time step of the episode.
++            self.ensembled_actions = actions.clone()
++            # Note: The last dimension is unsqueeze to make sure we can broadcast properly for tensor
++            # operations later.
++            self.ensembled_actions_count = torch.ones(
++                (self.chunk_size, 1), dtype=torch.long, device=self.ensembled_actions.device
++            )
++        else:
++            # self.ensembled_actions will have shape (batch_size, chunk_size - 1, action_dim). Compute
++            # the online update for those entries.
++            self.ensembled_actions *= self.ensemble_weights_cumsum[self.ensembled_actions_count - 1]
++            self.ensembled_actions += actions[:, :-1] * self.ensemble_weights[self.ensembled_actions_count]
++            self.ensembled_actions /= self.ensemble_weights_cumsum[self.ensembled_actions_count]
++            self.ensembled_actions_count = torch.clamp(self.ensembled_actions_count + 1, max=self.chunk_size)
++            # The last action, which has no prior online average, needs to get concatenated onto the end.
++            self.ensembled_actions = torch.cat([self.ensembled_actions, actions[:, -1:]], dim=1)
++            self.ensembled_actions_count = torch.cat(
++                [self.ensembled_actions_count, torch.ones_like(self.ensembled_actions_count[-1:])]
++            )
++        # "Consume" the first action.
++        action, self.ensembled_actions, self.ensembled_actions_count = (
++            self.ensembled_actions[:, 0],
++            self.ensembled_actions[:, 1:],
++            self.ensembled_actions_count[1:],
++        )
++        return action
++
++
+ class PI0FlowMatching(nn.Module):
+     """
+     π0: A Vision-Language-Action Flow Model for General Robot Control
+diff --git a/lerobot/common/policies/pi0/paligemma_with_expert.py b/lerobot/common/policies/pi0/paligemma_with_expert.py
+index fb5077fb..14ba67dc 100644
+--- a/lerobot/common/policies/pi0/paligemma_with_expert.py
++++ b/lerobot/common/policies/pi0/paligemma_with_expert.py
+@@ -193,6 +193,11 @@ class PaliGemmaWithExpertModel(PreTrainedModel):
+             for params in self.paligemma.parameters():
+                 params.requires_grad = False
+ 
++        # if not self.config.freeze_vision_encoder:
++        #     self.paligemma.vision_tower.train()
++        #     for params in self.paligemma.vision_tower.parameters():
++        #         params.requires_grad = True
++
+     def train(self, mode: bool = True):
+         super().train(mode)
+ 
+diff --git a/lerobot/common/policies/smolvla/configuration_smolvla.py b/lerobot/common/policies/smolvla/configuration_smolvla.py
+index 5996cf2e..f6f9b619 100644
+--- a/lerobot/common/policies/smolvla/configuration_smolvla.py
++++ b/lerobot/common/policies/smolvla/configuration_smolvla.py
+@@ -27,8 +27,8 @@ from lerobot.configs.types import FeatureType, NormalizationMode, PolicyFeature
+ class SmolVLAConfig(PreTrainedConfig):
+     # Input / output structure.
+     n_obs_steps: int = 1
+-    chunk_size: int = 50
+-    n_action_steps: int = 50
++    chunk_size: int = 30
++    n_action_steps: int = 30
+ 
+     normalization_mapping: dict[str, NormalizationMode] = field(
+         default_factory=lambda: {
+@@ -67,10 +67,14 @@ class SmolVLAConfig(PreTrainedConfig):
+     use_cache: bool = True
+ 
+     # Finetuning settings
+-    freeze_vision_encoder: bool = True
+-    train_expert_only: bool = True
++    freeze_vision_encoder: bool = False
++    train_expert_only: bool = False
+     train_state_proj: bool = True
+ 
++    # Inference.
++    # Note: the value used when temporal ensembling is enabled is 0.01.
++    temporal_ensemble_coeff: float | None = None
++
+     # Training presets
+     optimizer_lr: float = 1e-4
+     optimizer_betas: tuple[float, float] = (0.9, 0.95)
+@@ -82,8 +86,9 @@ class SmolVLAConfig(PreTrainedConfig):
+     scheduler_decay_steps: int = 30_000
+     scheduler_decay_lr: float = 2.5e-6
+ 
+-    vlm_model_name: str = "HuggingFaceTB/SmolVLM2-500M-Video-Instruct"  # Select the VLM backbone.
+-    load_vlm_weights: bool = False  # Set to True in case of training the expert from scratch. True when init from pretrained SmolVLA weights
++    # vlm_model_name: str = "HuggingFaceTB/SmolVLM2-500M-Video-Instruct"  # Select the VLM backbone.
++    vlm_model_name: str = "SmolVLM2-500M-Video-Instruct"
++    load_vlm_weights: bool = True  # Set to True in case of training the expert from scratch. True when init from pretrained SmolVLA weights
+ 
+     add_image_special_tokens: bool = False  # Whether to use special image tokens around image features.
+ 
+@@ -96,7 +101,7 @@ class SmolVLAConfig(PreTrainedConfig):
+     num_expert_layers: int = -1  # Less or equal to 0 is the default where the action expert has the same number of layers of VLM. Otherwise the expert have less layers.
+     num_vlm_layers: int = 16  # Number of layers used in the VLM (first num_vlm_layers layers)
+     self_attn_every_n_layers: int = 2  # Interleave SA layers each self_attn_every_n_layers
+-    expert_width_multiplier: float = 0.75  # The action expert hidden size (wrt to the VLM)
++    expert_width_multiplier: float = 1  # The action expert hidden size (wrt to the VLM)
+ 
+     min_period: float = 4e-3  # sensitivity range for the timestep used in sine-cosine positional encoding
+     max_period: float = 4.0
+diff --git a/lerobot/common/policies/smolvla/modeling_smolvla.py b/lerobot/common/policies/smolvla/modeling_smolvla.py
+index 5e0a9622..62ec5001 100644
+--- a/lerobot/common/policies/smolvla/modeling_smolvla.py
++++ b/lerobot/common/policies/smolvla/modeling_smolvla.py
+@@ -355,13 +355,21 @@ class SmolVLAPolicy(PreTrainedPolicy):
+ 
+         self.language_tokenizer = AutoProcessor.from_pretrained(self.config.vlm_model_name).tokenizer
+         self.model = VLAFlowMatching(config)
++
++        if config.temporal_ensemble_coeff is not None:
++            self.temporal_ensembler = SmolVLATemporalEnsembler(config.temporal_ensemble_coeff, config.chunk_size)
++
+         self.reset()
+ 
+     def reset(self):
+         """This should be called whenever the environment is reset."""
+-        self._queues = {
+-            ACTION: deque(maxlen=self.config.n_action_steps),
+-        }
++        if self.config.temporal_ensemble_coeff is not None:
++            self.temporal_ensembler.reset()
++            self._queues = {}
++        else:
++            self._queues = {
++                ACTION: deque(maxlen=self.config.n_action_steps),
++            }
+ 
+     # HACK(aliberts, danaaubakirova): we overwrite this classmethod here to fix smolVLA-specific issues
+     @classmethod
+@@ -384,13 +392,16 @@ class SmolVLAPolicy(PreTrainedPolicy):
+         return self.parameters()
+ 
+     @torch.no_grad
+-    def select_action(self, batch: dict[str, Tensor], noise: Tensor | None = None) -> Tensor:
++    def select_action(self, batch: dict[str, Tensor], noise: Tensor | None = None, custom: bool = False) -> Tensor:
+         """Select a single action given environment observations.
+ 
+         This method wraps `select_actions` in order to return one action at a time for execution in the
+         environment. It works by managing the actions in a queue and only calling `select_actions` when the
+         queue is empty.
+         """
++
++        if custom: return self.select_action_custom(batch, noise)
++
+         self.eval()
+ 
+         if self.config.adapt_to_pi_aloha:
+@@ -426,6 +437,47 @@ class SmolVLAPolicy(PreTrainedPolicy):
+             self._queues[ACTION].extend(actions.transpose(0, 1)[: self.config.n_action_steps])
+         return self._queues[ACTION].popleft()
+ 
++    @torch.no_grad
++    def select_action_custom(self, batch: dict[str, Tensor], noise: Tensor | None = None) -> Tensor:
++        """Select a single action given environment observations.
++
++        This method wraps `select_actions` in order to return all actions at a time for execution in the
++        environment.
++        """
++        self.eval()
++
++        if self.config.adapt_to_pi_aloha:
++            batch[OBS_STATE] = self._pi_aloha_decode_state(batch[OBS_STATE])
++
++        batch = self.normalize_inputs(batch)
++
++        self._queues = populate_queues(self._queues, batch, exclude_keys=[ACTION])
++        
++        for k in batch:
++            if k in self._queues:
++                batch[k] = torch.stack(list(self._queues[k]), dim=1)
++        images, img_masks = self.prepare_images(batch)
++        state = self.prepare_state(batch)
++        lang_tokens, lang_masks = self.prepare_language(batch)
++
++        actions = self.model.sample_actions(
++            images, img_masks, lang_tokens, lang_masks, state, noise=noise
++        )
++        # Unpad actions
++        original_action_dim = self.config.action_feature.shape[0]
++        actions = actions[:, :, :original_action_dim]
++
++        actions = self.unnormalize_outputs({"action": actions})["action"]
++
++        if self.config.adapt_to_pi_aloha:
++            actions = self._pi_aloha_encode_actions(actions)
++        
++        if self.config.temporal_ensemble_coeff is not None:
++            action = self.temporal_ensembler.update(actions)
++            return action
++
++        return actions[:, :self.config.n_action_steps]
++
+     def forward(self, batch: dict[str, Tensor], noise=None, time=None) -> dict[str, Tensor]:
+         """Do a full training forward pass to compute the loss"""
+         if self.config.adapt_to_pi_aloha:
+@@ -562,6 +614,97 @@ class SmolVLAPolicy(PreTrainedPolicy):
+         return actions
+ 
+ 
++class SmolVLATemporalEnsembler:
++    def __init__(self, temporal_ensemble_coeff: float, chunk_size: int) -> None:
++        """Temporal ensembling as described in Algorithm 2 of https://huggingface.co/papers/2304.13705.
++
++        The weights are calculated as wᵢ = exp(-temporal_ensemble_coeff * i) where w₀ is the oldest action.
++        They are then normalized to sum to 1 by dividing by Σwᵢ. Here's some intuition around how the
++        coefficient works:
++            - Setting it to 0 uniformly weighs all actions.
++            - Setting it positive gives more weight to older actions.
++            - Setting it negative gives more weight to newer actions.
++        NOTE: The default value for `temporal_ensemble_coeff` used by the original ACT work is 0.01. This
++        results in older actions being weighed more highly than newer actions (the experiments documented in
++        https://github.com/huggingface/lerobot/pull/319 hint at why highly weighing new actions might be
++        detrimental: doing so aggressively may diminish the benefits of action chunking).
++
++        Here we use an online method for computing the average rather than caching a history of actions in
++        order to compute the average offline. For a simple 1D sequence it looks something like:
++
++        ```
++        import torch
++
++        seq = torch.linspace(8, 8.5, 100)
++        print(seq)
++
++        m = 0.01
++        exp_weights = torch.exp(-m * torch.arange(len(seq)))
++        print(exp_weights)
++
++        # Calculate offline
++        avg = (exp_weights * seq).sum() / exp_weights.sum()
++        print("offline", avg)
++
++        # Calculate online
++        for i, item in enumerate(seq):
++            if i == 0:
++                avg = item
++                continue
++            avg *= exp_weights[:i].sum()
++            avg += item * exp_weights[i]
++            avg /= exp_weights[:i+1].sum()
++        print("online", avg)
++        ```
++        """
++        self.chunk_size = chunk_size
++        self.ensemble_weights = torch.exp(-temporal_ensemble_coeff * torch.arange(chunk_size))
++        self.ensemble_weights_cumsum = torch.cumsum(self.ensemble_weights, dim=0)
++        self.reset()
++
++    def reset(self):
++        """Resets the online computation variables."""
++        self.ensembled_actions = None
++        # (chunk_size,) count of how many actions are in the ensemble for each time step in the sequence.
++        self.ensembled_actions_count = None
++
++    def update(self, actions: Tensor) -> Tensor:
++        """
++        Takes a (batch, chunk_size, action_dim) sequence of actions, update the temporal ensemble for all
++        time steps, and pop/return the next batch of actions in the sequence.
++        """
++        self.ensemble_weights = self.ensemble_weights.to(device=actions.device)
++        self.ensemble_weights_cumsum = self.ensemble_weights_cumsum.to(device=actions.device)
++        if self.ensembled_actions is None:
++            # Initializes `self._ensembled_action` to the sequence of actions predicted during the first
++            # time step of the episode.
++            self.ensembled_actions = actions.clone()
++            # Note: The last dimension is unsqueeze to make sure we can broadcast properly for tensor
++            # operations later.
++            self.ensembled_actions_count = torch.ones(
++                (self.chunk_size, 1), dtype=torch.long, device=self.ensembled_actions.device
++            )
++        else:
++            # self.ensembled_actions will have shape (batch_size, chunk_size - 1, action_dim). Compute
++            # the online update for those entries.
++            self.ensembled_actions *= self.ensemble_weights_cumsum[self.ensembled_actions_count - 1]
++            self.ensembled_actions += actions[:, :-1] * self.ensemble_weights[self.ensembled_actions_count]
++            self.ensembled_actions /= self.ensemble_weights_cumsum[self.ensembled_actions_count]
++            self.ensembled_actions_count = torch.clamp(self.ensembled_actions_count + 1, max=self.chunk_size)
++            # The last action, which has no prior online average, needs to get concatenated onto the end.
++            self.ensembled_actions = torch.cat([self.ensembled_actions, actions[:, -1:]], dim=1)
++            self.ensembled_actions_count = torch.cat(
++                [self.ensembled_actions_count, torch.ones_like(self.ensembled_actions_count[-1:])]
++            )
++        # "Consume" the first action.
++        action, self.ensembled_actions, self.ensembled_actions_count = (
++            self.ensembled_actions[:, 0],
++            self.ensembled_actions[:, 1:],
++            self.ensembled_actions_count[1:],
++        )
++        return action
++
++
+ def pad_tensor(tensor, max_len, pad_value=0):
+     """
+     Efficiently pads a tensor along sequence dimension to match max_len.
+diff --git a/lerobot/configs/train.py b/lerobot/configs/train.py
+index 96a460bd..abf76194 100644
+--- a/lerobot/configs/train.py
++++ b/lerobot/configs/train.py
+@@ -50,14 +50,14 @@ class TrainPipelineConfig(HubMixin):
+     # AND for the evaluation environments.
+     seed: int | None = 1000
+     # Number of workers for the dataloader.
+-    num_workers: int = 4
+-    batch_size: int = 8
++    num_workers: int = 16
++    batch_size: int = 16
+     steps: int = 100_000
+     eval_freq: int = 20_000
+     log_freq: int = 200
+     save_checkpoint: bool = True
+     # Checkpoint is saved every `save_freq` training iterations and after the last training step.
+-    save_freq: int = 20_000
++    save_freq: int = 10_000
+     use_policy_training_preset: bool = True
+     optimizer: OptimizerConfig | None = None
+     scheduler: LRSchedulerConfig | None = None

@@ -1,0 +1,19 @@
+{
+    "headless": false,
+    "physics_dt": 0.008333333333333333,
+    "rendering_dt": 0.016666666666666666,
+    "stage_units_in_meters": 1.0,
+    "control": {
+        "update_interval": 0.012,
+        "joystick_deadzone": 0.03,
+        "teleop_toggle_debounce_time": 0.5
+    },
+    "ik": {
+        "diff_threshold": 0.001,
+        "joint_jump_threshold_deg": 30.0
+    },
+    "target_cube_move_threshold": {
+        "min": 0.001,
+        "max": 0.10
+    }
+}

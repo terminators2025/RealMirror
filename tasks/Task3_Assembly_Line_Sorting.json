@@ -1,0 +1,135 @@
+{
+    "robot": {
+        "robot_type": "A2",
+        "robot_cfg": "a2_robot_config.json",
+        "physics_params": {
+            "default_kp": 400.0,
+            "default_kd": 40.0,
+            "finger_kp": 9000,
+            "finger_kd": 30,
+            "finger_max_force": 9200
+        },
+        "arm_joint_angles_rad": {
+            "idx13_left_arm_joint1": 0.19999843835830688,
+            "idx14_left_arm_joint2": 1.2000001668930054,
+            "idx15_left_arm_joint3": 0.2000012844800949,
+            "idx16_left_arm_joint4": -1.800000000000000,
+            "idx17_left_arm_joint5": 1.0000007152557373,
+            "idx18_left_arm_joint6": 0.10083800554275513,
+            "idx19_left_arm_joint7": 0.10061943531036377,
+            "idx20_right_arm_joint1": 0.1999993920326233,
+            "idx21_right_arm_joint2": -1.199999213218689,
+            "idx22_right_arm_joint3": 0.1999993920326233,
+            "idx23_right_arm_joint4": 1.800000000000000,
+            "idx24_right_arm_joint5": 0.9999998211860657,
+            "idx25_right_arm_joint6": 0.09976326674222946,
+            "idx26_right_arm_joint7": -0.1009516716003418
+        },
+        "hand_joints_to_configure": [
+            "R_thumb_swing_joint",
+            "R_thumb_1_joint",
+            "R_thumb_2_joint",
+            "R_thumb_3_joint",
+            "R_index_1_joint",
+            "R_index_2_joint",
+            "R_middle_1_joint",
+            "R_middle_2_joint",
+            "R_ring_1_joint",
+            "R_ring_2_joint",
+            "R_little_1_joint",
+            "R_little_2_joint",
+            "L_thumb_swing_joint",
+            "L_thumb_1_joint",
+            "L_thumb_2_joint",
+            "L_thumb_3_joint",
+            "L_index_1_joint",
+            "L_index_2_joint",
+            "L_middle_1_joint",
+            "L_middle_2_joint",
+            "L_ring_1_joint",
+            "L_ring_2_joint",
+            "L_little_1_joint",
+            "L_little_2_joint"
+        ]
+    },
+    "scene": [
+        {
+            "task_related_objects": [
+                {
+                    "name" : "oil",
+                    "description": "Pick up the oil and place it on the left assembly line, put the cola on the right, and keep Sprite still",
+                    "cylinder_prim_path": "/scene/oil/Mesh0",
+                    "plate_prim_path": "/scene/cy_hole_01/mesh______",
+                    "target_prim_path": "/scene/small_KLT_02/Visuals/FOF_Mesh_Magenta_Box"
+                },
+                {
+                    "name": "cola",
+                    "description": "Pick up the oil and place it on the left assembly line, put the cola on the right, and keep Sprite still",
+                    "cylinder_prim_path": "/scene/cola/Mesh0",
+                    "plate_prim_path": "/scene/cy_hole_02/mesh______",
+                    "target_prim_path": "/scene/small_KLT_01/Visuals/FOF_Mesh_Magenta_Box"
+                },
+                {
+                    "name" : "sprite",
+                    "description": "Pick up the oil and place it on the left assembly line, put the cola on the right, and keep Sprite still",
+                    "cylinder_prim_path": "/scene/sprite/Mesh0",
+                    "plate_prim_path": "/scene/cy_hole_03/mesh______",
+                    "target_prim_path": "/scene/Convey/ConveyorBelt_A08/Rollers"
+                }
+            ],
+            "scene_id": "taks_3",
+            "scene_usd": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task3_Assembly_Line_Sorting/zhiyuan_A2_scene_task_3.usd",
+            "prime_path": "/scene",
+            "camera_configs": {
+                "head_camera": {
+                    "name": "head_camera",
+                    "prim_path_suffix": "/camera_col/RobotHeadCamera",
+                    "height": 256,
+                    "width": 256,
+                    "position": [
+                        0.0,
+                        0.0,
+                        1.4
+                    ],
+                    "orientation": [
+                        0.81915204,
+                        0.0,
+                        0.57357644,
+                        0.0
+                    ],
+                    "horizontal_aperture": 40.0,
+                    "clipping_range": [
+                        0.01,
+                        1000000
+                    ]
+                },
+                "left_wrist_camera": {
+                    "name": "left_wrist_camera",
+                    "prim_path_suffix": "/left_wrist_camera",
+                    "height": 256,
+                    "width": 256
+                },
+                "right_wrist_camera": {
+                    "name": "right_wrist_camera",
+                    "prim_path_suffix": "/right_wrist_camera",
+                    "height": 256,
+                    "width": 256
+                }
+            },
+            "eval_cfg": {
+                "model": {
+                    "model_root_dir": "/mnt/data/lzb/data/RealMirror_Benchmark_data/models",
+                    "checkpoints_dir": {
+                        "ACT": "ACT",
+                        "Diffusion": "Diffusion",
+                        "SmolVLA": "SmolVLA"
+                    }
+                },
+                "success_criteria": {
+                    "xy_threshold": 0.28,
+                    "z_threshold": 0.3
+                }
+            }
+        }
+    ]
+}

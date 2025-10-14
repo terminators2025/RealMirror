@@ -1,0 +1,7 @@
+# Note: These files are kept for development purposes only.
+!extensions.json
+!tasks.json
+# Ignore all other files
+.python.env
+settings.json
+launch.json

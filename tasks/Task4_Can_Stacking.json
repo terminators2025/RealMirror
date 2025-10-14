@@ -1,0 +1,160 @@
+{
+    "robot": {
+        "robot_type": "A2",
+        "robot_cfg": "a2_robot_config.json",
+        "physics_params": {
+            "default_kp": 400.0,
+            "default_kd": 40.0,
+            "finger_kp": 1.0e10,
+            "finger_kd": 6.00e7,
+            "finger_max_force": 1.0e10
+        },
+        "arm_joint_angles_rad": {
+            "idx13_left_arm_joint1": 0.19999843835830688,
+            "idx14_left_arm_joint2": 1.2000001668930054,
+            "idx15_left_arm_joint3": 0.2000012844800949,
+            "idx16_left_arm_joint4": -1.800000000000000,
+            "idx17_left_arm_joint5": 1.0000007152557373,
+            "idx18_left_arm_joint6": 0.10083800554275513,
+            "idx19_left_arm_joint7": 0.10061943531036377,
+            "idx20_right_arm_joint1": 0.1999993920326233,
+            "idx21_right_arm_joint2": -1.199999213218689,
+            "idx22_right_arm_joint3": 0.1999993920326233,
+            "idx23_right_arm_joint4": 1.800000000000000,
+            "idx24_right_arm_joint5": 0.9999998211860657,
+            "idx25_right_arm_joint6": 0.09976326674222946,
+            "idx26_right_arm_joint7": -0.1009516716003418
+        },
+        "hand_joints_to_configure": [
+            "R_thumb_swing_joint",
+            "R_thumb_1_joint",
+            "R_thumb_2_joint",
+            "R_thumb_3_joint",
+            "R_index_1_joint",
+            "R_index_2_joint",
+            "R_middle_1_joint",
+            "R_middle_2_joint",
+            "R_ring_1_joint",
+            "R_ring_2_joint",
+            "R_little_1_joint",
+            "R_little_2_joint",
+            "L_thumb_swing_joint",
+            "L_thumb_1_joint",
+            "L_thumb_2_joint",
+            "L_thumb_3_joint",
+            "L_index_1_joint",
+            "L_index_2_joint",
+            "L_middle_1_joint",
+            "L_middle_2_joint",
+            "L_ring_1_joint",
+            "L_ring_2_joint",
+            "L_little_1_joint",
+            "L_little_2_joint"
+        ]
+    },
+    "scene": [
+        {
+            "task_related_objects": [
+                {
+                    "name": "blue",
+                    "description": "Pick up the blue can on the left and place it in the middle, then pick up the blue can on the right and place it on top of the can in the middle",
+                    "cylinder_prim_path": "/scene/_02_master_chef_can_01",
+                    "target_prim_path": "/scene/_02_master_chef_can"
+                },
+                {
+                    "name": "red",
+                    "description": "Pick up the red can on the left and place it in the middle, then pick up the red can on the right and place it on top of the can in the middle",
+                    "cylinder_prim_path": "/scene/_05_tomato_soup_can",
+                    "target_prim_path": "/scene/_05_tomato_soup_can_01"
+                }
+            ],
+            "fix_objects_info": [
+                {
+                    "prim_path": "/scene/_02_master_chef_can",
+                    "position": [
+                        0.4304599,
+                        -0.2549301,
+                        0.08270397
+                    ],
+                    "orientation": [
+                        -7.0710689e-01,
+                        7.0710683e-01,
+                        4.3073669e-09,
+                        4.9349183e-09
+                    ]
+                },
+                {
+                    "prim_path": "/scene/_05_tomato_soup_can_01",
+                    "position": [
+                        0.4304599,
+                        -0.2549301,
+                        0.08270397
+                    ],
+                    "orientation": [
+                        -7.0710689e-01,
+                        7.0710683e-01,
+                        4.3073669e-09,
+                        4.9349183e-09
+                    ]
+                }
+            ],
+            "sampled_active_object": [
+                "/scene/_02_master_chef_can_01",
+                "/scene/_05_tomato_soup_can"
+            ],
+            "scene_id": "taks_4",
+            "scene_usd": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task4_Can_Stacking/kitchen_with_parlor.usd",
+            "prime_path": "/scene",
+            "camera_configs": {
+                "head_camera": {
+                    "name": "head_camera",
+                    "prim_path_suffix": "/camera_col/RobotHeadCamera",
+                    "height": 256,
+                    "width": 256,
+                    "position": [
+                        0.0,
+                        0.05,
+                        1.4
+                    ],
+                    "orientation": [
+                        0.81915204,
+                        0.0,
+                        0.57357644,
+                        0.0
+                    ],
+                    "horizontal_aperture": 31.0,
+                    "clipping_range": [
+                        0.01,
+                        1000000
+                    ]
+                },
+                "left_wrist_camera": {
+                    "name": "left_wrist_camera",
+                    "prim_path_suffix": "/left_wrist_camera",
+                    "height": 256,
+                    "width": 256
+                },
+                "right_wrist_camera": {
+                    "name": "right_wrist_camera",
+                    "prim_path_suffix": "/right_wrist_camera",
+                    "height": 256,
+                    "width": 256
+                }
+            },
+            "eval_cfg": {
+                "model": {
+                    "model_root_dir": "/mnt/data/lzb/data/RealMirror_Benchmark_data/models",
+                    "checkpoints_dir": {
+                        "ACT": "ACT",
+                        "Diffusion": "Diffusion",
+                        "SmolVLA": "SmolVLA"
+                    }
+                },
+                "success_criteria": {
+                    "xy_threshold": 0.07,
+                    "z_threshold": -0.2
+                }
+            }
+        }
+    ]
+}

@@ -2,17 +2,17 @@
 
 <div align="center">
   <a href="https://terminators2025.github.io/RealMirror.github.io/">
-    <img src="https://img.shields.io/badge/GitHub-grey?logo=GitHub" alt="GitHub">
+    <img src="https://img.shields.io/badge/github.io-grey?logo=GitHub" alt="GitHub">
   </a>
 </div>
 
 # *Opensource Plan
 **Before October 15, 2025**
- - [ ] Inference code
- - [ ] Evaluation code
- - [ ] Agibot A2 robot model
- - [ ] Scene assets
- - [ ] Checkpoints
+ - [x] Inference code
+ - [x] Evaluation code
+ - [x] Agibot A2 robot model
+ - [x] Scene assets
+ - [x] Checkpoints
 
 **Before October 30, 2025**
  - [ ] Training code
@@ -36,10 +36,10 @@ The emerging field of Vision-Language-Action (VLA) for humanoid robots faces sev
 
 To get started with the RealMirror benchmark, you need to download the pre-collected dataset and trained models:
 
-1. **Download the Dataset**
-   - Access the benchmark data from our Google Drive: [RealMirror Benchmark Dataset](https://drive.google.com/drive/folders/xxxxx)
+1. **Download the Data**
+   - Access the benchmark data from our Google Drive: [RealMirror Benchmark Data](https://drive.google.com/drive/folders/1A_4cs21x-W4V9r7zRgsiLGJGBPsRRveF?usp=drive_link)
    - The dataset includes both simulation assets and pre-trained models for all benchmark tasks
-   - Total download size: approximately XX GB
+   - Total download size: approximately 13 GB
 
 2. **Extract and Setup**
    - After downloading, extract the compressed archive to your local directory
@@ -208,47 +208,77 @@ Replace `/path/to/your/` with the actual path where you extracted the RealMirror
 
 
 #### 2.4.2 Run Benchmark
-Execute the following command under RealMirror root directory outside:
+Execute the following commands under RealMirror root directory. Each task can be evaluated with three different models: ACT, Diffusion, and SmolVLA.
 
+**Task1 - Kitchen Cleanup**
 ```bash
-# Task1 - Kitchen Cleanup (ACT model)
-$isaac_sim_dir/python.sh script/eval.py \
-    --task Task1_Kitchen_Cleanup \
-    --model-type act \
-    --area-file data/eval/data_area/data_area_task1.txt \
-    --arc2gear --num-rollouts 400 --max-horizon 400 --headless
+# ACT model
+isaacsim_py script/eval.py --task Task1_Kitchen_Cleanup --model-type act --area-file data/eval/data_area/data_area_task1.txt --arc2gear --num-rollouts 400 --max-horizon 400 --headless
 
-# For Task2
-$isaac_sim_dir/python.sh script/eval.py \
-    --task Task2_Cup_to_Cup_Transfer \
-    --model-type act/diffusion/smolvla \
-    --area-file data/eval/data_area/data_area_task2.txt \
-    --arc2gear --num-rollouts 200 --max-horizon 320 --headless
+# Diffusion model
+isaacsim_py script/eval.py --task Task1_Kitchen_Cleanup --model-type diffusion --area-file data/eval/data_area/data_area_task1.txt --arc2gear --num-rollouts 400 --max-horizon 400 --headless
 
-# For Task3
-$isaac_sim_dir/python.sh script/eval.py \
-    --task Task3_Assembly_Line_Sorting \
-    --model-type act \
-    --arc2gear --num-rollouts 100 --max-horizon 3000 --headless
-
-# For Task4
-$isaac_sim_dir/python.sh script/eval.py \
-    --task Task4_Can_Stacking \
-    --model-type act \
-    --arc2gear --use-stability-check \
-    --area-file data/eval/data_area/data_area_task4.txt \
-    --num-rollouts 400 --max-horizon 500 --stability-frames 100 --headless 
-
-# For Task5
-$isaac_sim_dir/python.sh script/eval.py \
-    --task Task5_Air_Fryer_Manipulation \
-    --model-type act \
-    --area-file data/eval/data_area/data_area_task5.txt \
-    --arc2gear --num-rollouts 400 --max-horizon 500 --headless
+# SmolVLA model
+isaacsim_py script/eval.py --task Task1_Kitchen_Cleanup --model-type smolvla --area-file data/eval/data_area/data_area_task1.txt --arc2gear --num-rollouts 400 --max-horizon 400 --headless
 ```
 
-Note： Add --headless flag for run without GUI and  saves the results to the runs/eval directory.
+**Task2 - Cup to Cup Transfer**
+```bash
+# ACT model
+isaacsim_py script/eval.py --task Task2_Cup_to_Cup_Transfer --model-type act --area-file data/eval/data_area/data_area_task2.txt --arc2gear --num-rollouts 200 --max-horizon 320 --headless
 
-## Star History
+# Diffusion model
+isaacsim_py script/eval.py --task Task2_Cup_to_Cup_Transfer --model-type diffusion --area-file data/eval/data_area/data_area_task2.txt --arc2gear --num-rollouts 200 --max-horizon 320 --headless
 
-[![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=Date)](https://www.star-history.com/#terminators2025/RealMirror&Date)
+# SmolVLA model
+isaacsim_py script/eval.py --task Task2_Cup_to_Cup_Transfer --model-type smolvla --area-file data/eval/data_area/data_area_task2.txt --arc2gear --num-rollouts 200 --max-horizon 320 --headless
+```
+
+**Task3 - Assembly Line Sorting**
+```bash
+# ACT model
+isaacsim_py script/eval.py --task Task3_Assembly_Line_Sorting --model-type act --arc2gear --num-rollouts 100 --max-horizon 3000 --headless
+
+# Diffusion model
+isaacsim_py script/eval.py --task Task3_Assembly_Line_Sorting --model-type diffusion --arc2gear --num-rollouts 100 --max-horizon 3000 --headless
+
+# SmolVLA model
+isaacsim_py script/eval.py --task Task3_Assembly_Line_Sorting --model-type smolvla --arc2gear --num-rollouts 100 --max-horizon 3000 --headless
+```
+
+**Task4 - Can Stacking**
+```bash
+# ACT model
+isaacsim_py script/eval.py --task Task4_Can_Stacking --model-type act --arc2gear --use-stability-check --area-file data/eval/data_area/data_area_task4.txt --num-rollouts 400 --max-horizon 500 --stability-frames 100 --headless
+
+# Diffusion model
+isaacsim_py script/eval.py --task Task4_Can_Stacking --model-type diffusion --arc2gear --use-stability-check --area-file data/eval/data_area/data_area_task4.txt --num-rollouts 400 --max-horizon 500 --stability-frames 100 --headless
+
+# SmolVLA model
+isaacsim_py script/eval.py --task Task4_Can_Stacking --model-type smolvla --arc2gear --use-stability-check --area-file data/eval/data_area/data_area_task4.txt --num-rollouts 400 --max-horizon 500 --stability-frames 100 --headless
+```
+
+**Task5 - Air Fryer Manipulation**
+```bash
+# ACT model
+isaacsim_py script/eval.py --task Task5_Air_Fryer_Manipulation --model-type act --area-file data/eval/data_area/data_area_task5.txt --arc2gear --num-rollouts 400 --max-horizon 500 --headless
+
+# Diffusion model
+isaacsim_py script/eval.py --task Task5_Air_Fryer_Manipulation --model-type diffusion --area-file data/eval/data_area/data_area_task5.txt --arc2gear --num-rollouts 400 --max-horizon 500 --headless
+
+# SmolVLA model
+isaacsim_py script/eval.py --task Task5_Air_Fryer_Manipulation --model-type smolvla --area-file data/eval/data_area/data_area_task5.txt --arc2gear --num-rollouts 400 --max-horizon 500 --headless
+```
+
+**Notes:**
+- The `isaacsim_py` command is an alias for `$isaac_sim_dir/python.sh`
+- Add `--headless` flag to run without GUI
+- Results are saved to the `runs/eval` directory
+- Each task evaluates different model architectures (ACT, Diffusion, SmolVLA) for comprehensive comparison
+- Task3 (Assembly Line Sorting) does not require an area file as it uses sequential object spawning
+- Task4 (Can Stacking) uses `--use-stability-check` and `--stability-frames` for precise stacking validation
+- For tasks evaluated using the SmolVLA model, it is necessary to download the pre-trained SmolVLM2-500M-Video-Instruct model from Hugging Face. This model serves as a critical dependency for SmolVLA-based evaluations. Please follow the link below to access and download the model:
+
+  [SmolVLM2-500M-Video-Instruct on Hugging Face](https://huggingface.co/HuggingFaceTB/SmolVLM2-500M-Video-Instruct)
+
+  After downloading, ensure the model is placed in the root directory of this project.

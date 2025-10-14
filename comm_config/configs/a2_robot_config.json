@@ -1,0 +1,206 @@
+{
+    "name": "a2_robot",
+    "usd_path": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/model_no_col2.usd",
+    "urdf_path": "/mnt/data/lzb/real_mirror_data/A2_t2d0_flagship/urdf/raise_a2_t2d0_flagship/model_no_col.urdf",
+    "prim_path": "/World/A2",
+    "robot_descriptor_paths": {
+        "right": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/arm_descriptor/a2_right_arm_robot_descriptor.yaml",
+        "left": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/arm_descriptor/a2_left_arm_robot_descriptor.yaml"
+    },
+    "arm_joints": {
+        "left": [
+            "idx13_left_arm_joint1",
+            "idx14_left_arm_joint2",
+            "idx15_left_arm_joint3",
+            "idx16_left_arm_joint4",
+            "idx17_left_arm_joint5",
+            "idx18_left_arm_joint6",
+            "idx19_left_arm_joint7"
+        ],
+        "right": [
+            "idx20_right_arm_joint1",
+            "idx21_right_arm_joint2",
+            "idx22_right_arm_joint3",
+            "idx23_right_arm_joint4",
+            "idx24_right_arm_joint5",
+            "idx25_right_arm_joint6",
+            "idx26_right_arm_joint7"
+        ]
+    },
+    "hand_joints": {
+        "left": [
+            "L_thumb_swing_joint",
+            "L_thumb_1_joint",
+            "L_index_1_joint",
+            "L_middle_1_joint",
+            "L_ring_1_joint",
+            "L_little_1_joint"
+        ],
+        "right": [
+            "R_thumb_swing_joint",
+            "R_thumb_1_joint",
+            "R_index_1_joint",
+            "R_middle_1_joint",
+            "R_ring_1_joint",
+            "R_little_1_joint"
+        ]
+    },
+    "wrist_joints": {
+        "left": {
+            "roll": "idx17_left_arm_joint5",
+            "pitch": "idx19_left_arm_joint7",
+            "yaw": "idx18_left_arm_joint6"
+        },
+        "right": {
+            "roll": "idx24_right_arm_joint5",
+            "pitch": "idx26_right_arm_joint7",
+            "yaw": "idx25_right_arm_joint6"
+        }
+    },
+    "finger_joint_names": [
+        "left_hand_joint",
+        "L_thumb_swing_joint",
+        "L_thumb_1_joint",
+        "L_thumb_2_joint",
+        "L_thumb_3_joint",
+        "L_index_1_joint",
+        "L_index_2_joint",
+        "L_middle_1_joint",
+        "L_middle_2_joint",
+        "L_ring_1_joint",
+        "L_ring_2_joint",
+        "L_little_1_joint",
+        "L_little_2_joint",
+        "right_hand_joint",
+        "R_thumb_swing_joint",
+        "R_thumb_1_joint",
+        "R_thumb_2_joint",
+        "R_thumb_3_joint",
+        "R_index_1_joint",
+        "R_index_2_joint",
+        "R_middle_1_joint",
+        "R_middle_2_joint",
+        "R_ring_1_joint",
+        "R_ring_2_joint",
+        "R_little_1_joint",
+        "R_little_2_joint"
+    ],
+    "gripper_config": {
+        "right": {
+            "stage1_joints": [
+                "R_thumb_swing_joint"
+            ],
+            "stage1_closed_angles_deg": [
+                90.0
+            ],
+            "stage2_joints": [
+                "R_thumb_1_joint",
+                "R_thumb_2_joint",
+                "R_thumb_3_joint",
+                "R_index_1_joint",
+                "R_index_2_joint",
+                "R_middle_1_joint",
+                "R_middle_2_joint",
+                "R_ring_1_joint",
+                "R_ring_2_joint",
+                "R_little_1_joint",
+                "R_little_2_joint"
+            ],
+            "stage2_closed_angles_deg": [
+                12.0,
+                12.0,
+                12.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0
+            ]
+        },
+        "left": {
+            "stage1_joints": [
+                "L_thumb_swing_joint"
+            ],
+            "stage1_closed_angles_deg": [
+                90.0
+            ],
+            "stage2_joints": [
+                "L_thumb_1_joint",
+                "L_thumb_2_joint",
+                "L_thumb_3_joint",
+                "L_index_1_joint",
+                "L_index_2_joint",
+                "L_middle_1_joint",
+                "L_middle_2_joint",
+                "L_ring_1_joint",
+                "L_ring_2_joint",
+                "L_little_1_joint",
+                "L_little_2_joint"
+            ],
+            "stage2_closed_angles_deg": [
+                12.0,
+                12.0,
+                12.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0,
+                50.0
+            ]
+        }
+    },
+    "physics_params": {
+        "default_kp": 400.0,
+        "default_kd": 40.0,
+        "finger_kp": 1.0e10,
+        "finger_kd": 6.0e7,
+        "finger_max_force": 1.0e10
+    },
+    "control_params": {
+        "gripper_angular_speed_deg": 980.0,
+        "gripper_convergence_threshold_deg": 2.0,
+        "wrist_roll_speed_deg": 1080.0,
+        "wrist_roll_limits_deg": {
+            "min": 0.0,
+            "max": 179.0
+        }
+    },
+    "initial_pose": {
+        "position": [
+            0.0,
+            0.0,
+            0.80
+        ],
+        "orientation": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+        ]
+    },
+    "initial_joint_positions": {
+        "idx13_left_arm_joint1": 0.19999843835830688,
+        "idx14_left_arm_joint2": 1.2000001668930054,
+        "idx15_left_arm_joint3": 0.2000012844800949,
+        "idx16_left_arm_joint4": -1.5,
+        "idx17_left_arm_joint5": 1.0000007152557373,
+        "idx18_left_arm_joint6": 0.10083800554275513,
+        "idx19_left_arm_joint7": 0.10061943531036377,
+        "idx20_right_arm_joint1": 0.1999993920326233,
+        "idx21_right_arm_joint2": -1.199999213218689,
+        "idx22_right_arm_joint3": 0.1999993920326233,
+        "idx23_right_arm_joint4": 1.499998688697815,
+        "idx24_right_arm_joint5": 0.9999998211860657,
+        "idx25_right_arm_joint6": 0.09976326674222946,
+        "idx26_right_arm_joint7": -0.1009516716003418,
+        "L_thumb_swing_joint_deg": 90.0,
+        "R_thumb_swing_joint_deg": 90.0
+    }
+   
+}
