@@ -282,3 +282,6 @@ isaacsim_py script/eval.py --task Task5_Air_Fryer_Manipulation --model-type smol
   [SmolVLM2-500M-Video-Instruct on Hugging Face](https://huggingface.co/HuggingFaceTB/SmolVLM2-500M-Video-Instruct)
 
   After downloading, ensure the model is placed in the root directory of this project.
+  ## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=date&legend=top-left)](https://www.star-history.com/#terminators2025/RealMirror&type=date&legend=top-left)
