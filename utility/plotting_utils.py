@@ -152,7 +152,6 @@ def generate_results_plot(
 
     # --- Aesthetic Parameters ---
     plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = ['Times New Roman']
     plt.rcParams['axes.titlesize'] = 20
     plt.rcParams['axes.labelsize'] = 16
     plt.rcParams['xtick.labelsize'] = 12
