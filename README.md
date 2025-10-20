@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="./docs/image/zte_logo.png" alt="ZTE Agibot Logo" width="128" />
+</div>
+
 ![teaser.png](./docs/image/Teaser.png)
 
 <div align="center">
