@@ -131,6 +131,65 @@
                     "xy_threshold": 0.07,
                     "z_threshold": 0.2
                 }
+            },
+            "teleoper_cfg": {
+                "data_collection_anchor": {
+                    "/scene/new_leshi/Mesh0": {
+                        "position": [
+                            0.38735154,
+                            0.36000046,
+                            0.02354201
+                        ],
+                        "orientation": [
+                            0.5000014,
+                            0.4999984,
+                            0.49999985,
+                            0.5000004
+                        ]
+                    },
+                    "/scene/new_greentee/Mesh0": {
+                        "position": [
+                            0.38735154,
+                            0.36000046,
+                            0.02354201
+                        ],
+                        "orientation": [
+                            0.5000014,
+                            0.4999984,
+                            0.49999985,
+                            0.5000004
+                        ]
+                    },
+                    "/scene/new_yellowtea/Mesh0": {
+                        "position": [
+                            0.38735154,
+                            0.36000046,
+                            0.02354201
+                        ],
+                        "orientation": [
+                            0.5000014,
+                            0.4999984,
+                            0.49999985,
+                            0.5000004
+                        ]
+                    }
+                },
+                "recorder_tracked_objects_config": {
+                    "leshi": {
+                        "leshi": "/scene/new_leshi/Mesh0"
+                    },
+                    "greentee": {
+                        "greentee": "/scene/new_greentee/Mesh0"
+                    },
+                    "yellowtea": {
+                        "yellowtea": "/scene/new_yellowtea/Mesh0"
+                    }
+                },
+                "movable_object_prims": [
+                    "/scene/new_leshi/Mesh0",
+                    "/scene/new_greentee/Mesh0",
+                    "/scene/new_yellowtea/Mesh0"
+                ]
             }
         }
     ]

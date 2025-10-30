@@ -1,17 +1,17 @@
 # Copyright 2025 ZTE Corporation.
 # All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
 #
-# https://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 
 import json
 import os
@@ -43,12 +43,8 @@ class RobotConfig:
     finger_kd: float = 6.0e7
     finger_max_force: float = 1.0e10
 
-    initial_position: np.ndarray = field(
-        default_factory=lambda: np.array([0.0, 0.0, 0.0])
-    )
-    initial_orientation: np.ndarray = field(
-        default_factory=lambda: np.array([1.0, 0.0, 0.0, 0.0])
-    )
+    initial_position: np.ndarray = field(default_factory=lambda: np.array([0.0, 0.0, 0.0]))
+    initial_orientation: np.ndarray = field(default_factory=lambda: np.array([1.0, 0.0, 0.0, 0.0]))
     initial_joint_positions: Dict[str, float] = field(default_factory=dict)
 
     gripper_angular_speed: float = np.deg2rad(980.0)
@@ -91,9 +87,7 @@ class RobotConfig:
             instance.finger_joint_names = set(config_dict["finger_joint_names"])
 
         if "gripper_config" in config_dict:
-            instance.gripper_config = cls._process_gripper_config(
-                config_dict["gripper_config"]
-            )
+            instance.gripper_config = cls._process_gripper_config(config_dict["gripper_config"])
 
         if "physics_params" in config_dict:
             physics = config_dict["physics_params"]
@@ -105,15 +99,9 @@ class RobotConfig:
 
         if "control_params" in config_dict:
             control = config_dict["control_params"]
-            instance.gripper_angular_speed = np.deg2rad(
-                control.get("gripper_angular_speed_deg", 980.0)
-            )
-            instance.gripper_convergence_threshold = np.deg2rad(
-                control.get("gripper_convergence_threshold_deg", 2.0)
-            )
-            instance.wrist_roll_speed = np.deg2rad(
-                control.get("wrist_roll_speed_deg", 1080.0)
-            )
+            instance.gripper_angular_speed = np.deg2rad(control.get("gripper_angular_speed_deg", 980.0))
+            instance.gripper_convergence_threshold = np.deg2rad(control.get("gripper_convergence_threshold_deg", 2.0))
+            instance.wrist_roll_speed = np.deg2rad(control.get("wrist_roll_speed_deg", 1080.0))
             if "wrist_roll_limits_deg" in control:
                 limits = control["wrist_roll_limits_deg"]
                 instance.wrist_roll_limits = {
@@ -124,9 +112,7 @@ class RobotConfig:
         if "initial_pose" in config_dict:
             pose = config_dict["initial_pose"]
             instance.initial_position = np.array(pose.get("position", [0.0, 0.0, 0.0]))
-            instance.initial_orientation = np.array(
-                pose.get("orientation", [1.0, 0.0, 0.0, 0.0])
-            )
+            instance.initial_orientation = np.array(pose.get("orientation", [1.0, 0.0, 0.0, 0.0]))
 
         if "initial_joint_positions" in config_dict:
             instance.initial_joint_positions = cls._process_initial_joint_positions(
@@ -152,24 +138,16 @@ class RobotConfig:
 
             if "stage1_closed_angles_deg" in config:
                 angles_deg = config["stage1_closed_angles_deg"]
-                processed_config[arm]["stage1_closed_angles"] = [
-                    np.deg2rad(angle) for angle in angles_deg
-                ]
+                processed_config[arm]["stage1_closed_angles"] = [np.deg2rad(angle) for angle in angles_deg]
             elif "stage1_closed_angles" in config:
-                processed_config[arm]["stage1_closed_angles"] = config[
-                    "stage1_closed_angles"
-                ]
+                processed_config[arm]["stage1_closed_angles"] = config["stage1_closed_angles"]
 
             if "stage2_closed_angles_deg" in config:
                 angles_deg = config["stage2_closed_angles_deg"]
-                processed_config[arm]["stage2_closed_angles"] = [
-                    np.deg2rad(angle) for angle in angles_deg
-                ]
+                processed_config[arm]["stage2_closed_angles"] = [np.deg2rad(angle) for angle in angles_deg]
             elif "stage2_closed_angles" in config:
-                processed_config[arm]["stage2_closed_angles"] = config[
-                    "stage2_closed_angles"
-                ]
-
+                processed_config[arm]["stage2_closed_angles"] = config["stage2_closed_angles"]
+        
         return processed_config
 
     @staticmethod
@@ -204,10 +182,7 @@ class RobotConfig:
         dict_positions = {}
         for joint_name, value in self.initial_joint_positions.items():
 
-            if (
-                "thumb_swing_joint" in joint_name
-                and abs(value - np.deg2rad(90.0)) < 0.001
-            ):
+            if "thumb_swing_joint" in joint_name and abs(value - np.deg2rad(90.0)) < 0.001:
                 dict_positions[joint_name + "_deg"] = 90.0
             else:
                 dict_positions[joint_name] = value

@@ -3,12 +3,8 @@ import json
 import os
 import numpy as np
 
-parser = argparse.ArgumentParser(
-    description="Run robot inference with pretrained models"
-)
-parser.add_argument(
-    "--task", type=str, default="Task1_Kitchen_Cleanup", help="Task configuration name"
-)
+parser = argparse.ArgumentParser(description="Run robot inference with pretrained models")
+parser.add_argument("--task", type=str, default="Task1_Kitchen_Cleanup", help="Task configuration name")
 parser.add_argument(
     "--model-type",
     type=str,
@@ -16,12 +12,8 @@ parser.add_argument(
     choices=["act", "diffusion", "smolvla"],
     help="Type of model to use",
 )
-parser.add_argument(
-    "--model-path", type=str, required=True, help="Path to pretrained model"
-)
-parser.add_argument(
-    "--headless", action="store_true", help="Run in headless mode without GUI"
-)
+parser.add_argument("--model-path", type=str, required=True, help="Path to pretrained model")
+parser.add_argument("--headless", action="store_true", help="Run in headless mode without GUI")
 parser.add_argument(
     "--arc2gear",
     action="store_true",
@@ -39,9 +31,7 @@ parser.add_argument(
     default=5,
     help="Number of actions to use from model output chunk",
 )
-parser.add_argument(
-    "--max-steps", type=int, default=1000, help="Maximum number of simulation steps"
-)
+parser.add_argument("--max-steps", type=int, default=1000, help="Maximum number of simulation steps")
 
 parser.add_argument(
     "--resolution",
@@ -98,6 +88,7 @@ class InferenceRunner:
         self.args = args
         self.is_inferencing = False
         self.keyboard_sub = None
+        self.step_count = 0
 
         # Load configurations
         self._load_configurations()
@@ -112,20 +103,18 @@ class InferenceRunner:
 
         # Initialize robot
         self.robot = RobotFactory.create_robot(self.robot_type, self.robot_config)
-        self.robot.initialize(self.world, simulation_app)
+        self.robot.initialize(self.world, simulation_app, "infer")
 
         # Get robot view and joint indices
         self.robot_view = self.robot.robot_view
         self._setup_joint_indices()
 
         # Initialize scene
-        self.scene_manager = SceneManager(self.world, self.sim_config)
+        self.scene_manager = SceneManager(self.world, self.sim_config, task_config=self.task_config)
         self.scene_manager.setup_scene()
 
         # Initialize cameras
-        self.cameras = CameraConfig.create_cameras_from_task_config(
-            self.task_config, self.robot_config
-        )
+        self.cameras = CameraConfig.create_cameras_from_task_config(self.task_config, self.robot_config)
 
         # Initialize inference components
         self._setup_inference()
@@ -158,9 +147,7 @@ class InferenceRunner:
         self.robot_config = RobotConfig.from_json(robot_config_path)
 
         # Load simulation config
-        sim_config_path = os.path.join(
-            project_root, "comm_config", "configs", "simulation_config.json"
-        )
+        sim_config_path = os.path.join(project_root, "comm_config", "configs", "simulation_config.json")
         self.sim_config = SimulationConfig.from_json(sim_config_path, self.task_config)
 
         Logger.info(f"Loaded configurations for task: {self.args.task}")
@@ -240,9 +227,7 @@ class InferenceRunner:
         ]
 
         # Combine all action joints
-        action_joint_names = (
-            left_arm_joints + right_arm_joints + left_hand_mimic + right_hand_mimic
-        )
+        action_joint_names = left_arm_joints + right_arm_joints + left_hand_mimic + right_hand_mimic
 
         try:
             action_indices = [dof_map[name] for name in action_joint_names]
@@ -301,15 +286,11 @@ class InferenceRunner:
             if event.input == carb.input.KeyboardInput.S:
                 # Toggle inference
                 self.is_inferencing = not self.is_inferencing
-                Logger.info(
-                    f"Inference {'STARTED' if self.is_inferencing else 'STOPPED'}"
-                )
+                Logger.info(f"Inference {'STARTED' if self.is_inferencing else 'STOPPED'}")
 
                 if self.is_inferencing:
                     # Log initial state
-                    state = self.inference_engine.get_observation_state(
-                        self.robot_view, self.state_joint_indices
-                    )
+                    state = self.inference_engine.get_observation_state(self.robot_view, self.state_joint_indices)
                     if state is not None:
                         Logger.info(f"Initial state (26-DOF): {np.round(state, 2)}")
 
@@ -347,9 +328,7 @@ class InferenceRunner:
 
         # Subscribe to keyboard events
         app_input = carb.input.acquire_input_interface()
-        self.keyboard_sub = app_input.subscribe_to_keyboard_events(
-            None, keyboard_event_cb
-        )
+        self.keyboard_sub = app_input.subscribe_to_keyboard_events(None, keyboard_event_cb)
 
         Logger.info("Keyboard controls setup complete")
         Logger.info("Controls:")
@@ -365,14 +344,11 @@ class InferenceRunner:
         # Reset inference engine
         self.inference_engine.reset()
         self.is_inferencing = False
+        self.step_count = 0
 
         if self.robot and self.robot.robot_ref:
-            initial_positions = self.task_config["robot"].get(
-                "arm_joint_angles_rad", {}
-            )
-            hand_joints_to_configure = self.task_config["robot"].get(
-                "hand_joints_to_configure", []
-            )
+            initial_positions = self.task_config["robot"].get("arm_joint_angles_rad", {})
+            hand_joints_to_configure = self.task_config["robot"].get("hand_joints_to_configure", [])
             current_positions = self.robot.get_joint_positions()
 
             if current_positions is not None:
@@ -390,9 +366,7 @@ class InferenceRunner:
                             current_positions[idx] = 0.0
 
                 self.robot.set_joint_positions(current_positions)
-                Logger.info(
-                    f"Robot reset to initial joint positions. {current_positions}"
-                )
+                Logger.info(f"Robot reset to initial joint positions. {current_positions}")
 
         # Reset scene objects
         self.scene_manager.reset_active_object_pose()
@@ -402,21 +376,23 @@ class InferenceRunner:
     def run_inference_step(self):
         """Run a single inference step."""
         # Get observation state
-        state = self.inference_engine.get_observation_state(
-            self.robot_view, self.state_joint_indices
-        )
+        state = self.inference_engine.get_observation_state(self.robot_view, self.state_joint_indices)
         if state is None:
             Logger.warning("Failed to get observation state")
             return
 
         # Get camera images
-        head_image = get_camera_image(self.cameras.get("head_camera"), "rgb")
-        left_wrist_image = get_camera_image(
-            self.cameras.get("left_wrist_camera"), "rgb"
-        )
-        right_wrist_image = get_camera_image(
-            self.cameras.get("right_wrist_camera"), "rgb"
-        )
+        head_camera = self.cameras.get("head_camera")
+        left_wrist_camera = self.cameras.get("left_wrist_camera")
+        right_wrist_camera = self.cameras.get("right_wrist_camera")
+
+        if head_camera is None or left_wrist_camera is None or right_wrist_camera is None:
+            Logger.warning("Failed to get cameras")
+            return
+
+        head_image = get_camera_image(head_camera, "rgb")
+        left_wrist_image = get_camera_image(left_wrist_camera, "rgb")
+        right_wrist_image = get_camera_image(right_wrist_camera, "rgb")
 
         if head_image is None or left_wrist_image is None or right_wrist_image is None:
             Logger.warning("Failed to get camera images")
@@ -437,9 +413,7 @@ class InferenceRunner:
 
         # Apply actions
         if len(self.action_joint_indices) != actions.shape[-1]:
-            Logger.error(
-                f"Action dimension mismatch: {len(self.action_joint_indices)} vs {actions.shape[-1]}"
-            )
+            Logger.error(f"Action dimension mismatch: {len(self.action_joint_indices)} vs {actions.shape[-1]}")
             return
 
         # Apply each action in the chunk
@@ -468,20 +442,19 @@ class InferenceRunner:
         Logger.info("Ready for inference. Press 'S' to start.")
 
         # Main loop
-        step_count = 0
-        while simulation_app.is_running() and step_count < self.args.max_steps:
+        while simulation_app.is_running() and self.step_count < self.args.max_steps:
             self.world.step(render=True)
 
             if self.world.is_playing() and self.is_inferencing:
                 self.run_inference_step()
-                step_count += 1
+                self.step_count += 1
 
-                if step_count % 100 == 0:
-                    Logger.info(f"Inference step: {step_count}/{self.args.max_steps}")
+                if self.step_count % 100 == 0:
+                    Logger.info(f"Inference step: {self.step_count}/{self.args.max_steps}")
 
             simulation_app.update()
 
-        if step_count >= self.args.max_steps:
+        if self.step_count >= self.args.max_steps:
             Logger.info(f"Reached maximum steps: {self.args.max_steps}")
 
     def shutdown(self):

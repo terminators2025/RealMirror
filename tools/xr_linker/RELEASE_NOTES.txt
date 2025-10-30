@@ -1,0 +1,61 @@
+XR Linker Production Release
+========================================
+
+Release Name: xr_linker_production_20251030_185122
+Release Date: 2025-10-30 18:51:39
+Node.js Version: v22.19.0
+
+Package Contents:
+- Compiled bytecode (.jsc files)
+- Production dependencies
+- Client-side files
+- Configuration templates
+- HTTPS certificate directory
+
+Installation Instructions:
+========================================
+
+1. Extract the package:
+   tar -xzf xr_linker_production_20251030_185122.tar.gz
+   cd xr_linker_production_20251030_185122
+
+2. Configure environment:
+   cp .env.example .env
+   # Edit .env file as needed
+
+3. Prepare SSL certificates:
+   # Place your SSL certificate files in cert/
+   cert/key.pem  - SSL private key
+   cert/cert.pem - SSL certificate
+
+4. Start the server:
+   npm start
+
+   Or directly:
+   node loader.js
+
+System Requirements:
+========================================
+- Node.js: v22.19.0 (recommended)
+- npm: Latest version
+- OS: Linux, macOS, or Windows
+
+Configuration:
+========================================
+Edit the .env file to configure:
+- PORT: Server port (default: 3000)
+- HOST: Listening address (default: 0.0.0.0)
+- LOG_LEVEL: Logging level (info/warn/error)
+- DATA_STORAGE_ENABLED: Enable data storage
+
+Support:
+========================================
+For issues or questions, please contact:
+- Documentation: See README.md
+- Build Guide: See docs/BUILD_GUIDE.md
+
+Security Note:
+========================================
+This package contains compiled bytecode to protect
+the source code. Do not decompile or reverse engineer.
+

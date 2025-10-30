@@ -56,7 +56,7 @@
         {
             "task_related_objects": [
                 {
-                    "name" : "oil",
+                    "name": "oil",
                     "description": "Pick up the oil and place it on the left assembly line, put the cola on the right, and keep Sprite still",
                     "cylinder_prim_path": "/scene/oil/Mesh0",
                     "plate_prim_path": "/scene/cy_hole_01/mesh______",
@@ -70,12 +70,20 @@
                     "target_prim_path": "/scene/small_KLT_01/Visuals/FOF_Mesh_Magenta_Box"
                 },
                 {
-                    "name" : "sprite",
+                    "name": "sprite",
                     "description": "Pick up the oil and place it on the left assembly line, put the cola on the right, and keep Sprite still",
                     "cylinder_prim_path": "/scene/sprite/Mesh0",
                     "plate_prim_path": "/scene/cy_hole_03/mesh______",
                     "target_prim_path": "/scene/Convey/ConveyorBelt_A08/Rollers"
                 }
+            ],
+            "sampled_active_object": [
+                "/scene/oil/Mesh0",
+                "/scene/cy_hole_01/mesh______",
+                "/scene/cola/Mesh0",
+                "/scene/cy_hole_02/mesh______",
+                "/scene/sprite/Mesh0",
+                "/scene/cy_hole_03/mesh______"
             ],
             "scene_id": "taks_3",
             "scene_usd": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task3_Assembly_Line_Sorting/zhiyuan_A2_scene_task_3.usd",
@@ -129,6 +137,107 @@
                     "xy_threshold": 0.28,
                     "z_threshold": 0.3
                 }
+            },
+            "teleoper_cfg": {
+                "data_collection_anchor": {
+                    "/scene/oil/Mesh0": {
+                        "position": [
+                            -0.05031569,
+                            -0.45503885,
+                            0.0648929
+                        ],
+                        "orientation": [
+                            0.639211,
+                            0.63921094,
+                            -0.30233973,
+                            -0.30233976
+                        ]
+                    },
+                    "/scene/cy_hole_01/mesh______": {
+                        "position": [
+                            -0.05195221,
+                            -0.45505947,
+                            -0.12359744
+                        ],
+                        "orientation": [
+                            0.7034523,
+                            0.7034689,
+                            -0.07170992,
+                            -0.07172309
+                        ]
+                    },
+                    "/scene/cola/Mesh0": {
+                        "position": [
+                            -0.35229656,
+                            -0.6931408,
+                            0.08397942
+                        ],
+                        "orientation": [
+                            0.63967955,
+                            0.63831264,
+                            -0.30118766,
+                            -0.3043898
+                        ]
+                    },
+                    "/scene/cy_hole_02/mesh______": {
+                        "position": [
+                            -0.35339877,
+                            -0.69355154,
+                            -0.12416437
+                        ],
+                        "orientation": [
+                            0.63898784,
+                            0.6394395,
+                            -0.30311063,
+                            -0.30155554
+                        ]
+                    },
+                    "/scene/sprite/Mesh0": {
+                        "position": [
+                            -0.66931564,
+                            -0.9554706,
+                            0.07025967
+                        ],
+                        "orientation": [
+                            0.63829285,
+                            0.64261454,
+                            -0.3018699,
+                            -0.29749548
+                        ]
+                    },
+                    "/scene/cy_hole_03/mesh______": {
+                        "position": [
+                            -0.66355693,
+                            -0.9550235,
+                            -0.11661381
+                        ],
+                        "orientation": [
+                            0.70715046,
+                            0.70706308,
+                            -0.00036230683,
+                            0.00032146275
+                        ]
+                    }
+                },
+                "recorder_tracked_objects_config": {
+                    "oil": {
+                        "oil": "/scene/oil/Mesh0"
+                    },
+                    "cola": {
+                        "cola": "/scene/cola/Mesh0"
+                    },
+                    "sprite": {
+                        "sprite": "/scene/sprite/Mesh0"
+                    }
+                },
+                "movable_object_prims" : [
+                    "/scene/oil/Mesh0",
+                    "/scene/cy_hole_01/mesh______",
+                    "/scene/cola/Mesh0",
+                    "/scene/cy_hole_02/mesh______",
+                    "/scene/sprite/Mesh0",
+                    "/scene/cy_hole_03/mesh______"
+                ]
             }
         }
     ]

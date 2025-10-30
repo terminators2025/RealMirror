@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WebXR Controller Data Collection</title>
+  
+  <!-- Import styles -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Import Socket.IO client library -->
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  
+  <!-- Compatibility warning -->
+  <div id="compatibility-warning">
+    <p>Your browser does not support WebXR or related features are not enabled. Please try:</p>
+    <ul>
+      <li>Using a WebXR-enabled browser (e.g., Chrome, Edge)</li>
+      <li>Ensuring a VR device is connected (e.g., Pico, Quest, etc.)</li>
+      <li>Checking if WebXR features are enabled in your browser</li>
+    </ul>
+  </div>
+
+  <!-- Main UI -->
+  <div id="main-ui">
+    <h1>WebXR Controller Data Collection</h1>
+    <div id="info">Detecting device support...</div>
+    <button id="enter-vr">Enter VR Mode</button>
+  </div>
+
+  <!-- Loading bar -->
+  <div id="loading-bar">
+    <div id="progress"></div>
+  </div>
+
+  <!-- Client scripts (modular loading) -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

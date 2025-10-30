@@ -1,0 +1,134 @@
+/**
+ * WebXR Data Collection Application Styles
+ */
+
+/* Global styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #1a1a1a;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #ffffff;
+}
+
+/* Main UI container */
+#main-ui {
+  text-align: center;
+  padding-top: 50px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Title styles */
+h1 {
+  color: #ffffff;
+  font-size: 2em;
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+
+/* Info text */
+#info {
+  color: #cccccc;
+  margin: 20px;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* Enter VR button */
+#enter-vr {
+  display: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  font-weight: 500;
+}
+
+#enter-vr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+#enter-vr:active {
+  transform: translateY(0);
+}
+
+/* Compatibility warning */
+#compatibility-warning {
+  display: none;
+  color: #ff6b6b;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 600px;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  border-radius: 8px;
+  text-align: left;
+}
+
+#compatibility-warning p {
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+#compatibility-warning ul {
+  margin-left: 20px;
+  line-height: 1.8;
+}
+
+#compatibility-warning code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Loading bar */
+#loading-bar {
+  width: 300px;
+  height: 10px;
+  background: #333333;
+  margin: 20px auto;
+  display: none;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#progress {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%);
+  transition: width 0.3s ease;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #main-ui {
+    padding: 30px 20px;
+  }
+
+  h1 {
+    font-size: 1.5em;
+  }
+
+  #enter-vr {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+
+  #compatibility-warning {
+    padding: 15px;
+    margin: 15px;
+  }
+}

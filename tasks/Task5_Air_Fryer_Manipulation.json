@@ -80,7 +80,7 @@
                     "target_prim_path": "/scene/s1/model_bakingchamber/bakingChamber_E_body_1"
                 }
             ],
-            "sampled_active_object":[
+            "sampled_active_object": [
                 "/scene/chicken_wrap/Mesh0",
                 "/scene/leg/Mesh0",
                 "/scene/carrot/Mesh0",
@@ -138,6 +138,82 @@
                     "xy_threshold": 0.07,
                     "z_threshold": -0.2
                 }
+            },
+            "teleoper_cfg": {
+                "data_collection_anchor": {
+                    "/scene/carrot/Mesh0": {
+                        "position": [
+                            0.3679935,
+                            0.2304075,
+                            0.071262502
+                        ],
+                        "orientation": [
+                            6.725044e-03,
+                            9.996234e-01,
+                            -4.907092e-05,
+                            -2.660351e-02
+                        ]
+                    },
+                    "/scene/leg/Mesh0": {
+                        "position": [
+                            0.3679935,
+                            0.2304075,
+                            0.07343613
+                        ],
+                        "orientation": [
+                            7.4505806e-09,
+                            1.1641532e-09,
+                            7.0710683e-01,
+                            7.0710689e-01
+                        ]
+                    },
+                    "/scene/chicken_wrap/Mesh0": {
+                        "position": [
+                            0.3679935,
+                            0.2304075,
+                            0.0739303
+                        ],
+                        "orientation": [
+                            7.4338669e-01,
+                            6.6886204e-01,
+                            -3.7252903e-09,
+                            -2.3355824e-09
+                        ]
+                    },
+                    "/scene/plate/Mesh0": {
+                        "position": [
+                            0.3615359,
+                            0.22751589,
+                            0.04349697
+                        ],
+                        "orientation": [
+                            0.696868,
+                            0.7171902,
+                            -0.00326043,
+                            -0.00162984
+                        ]
+                    }
+                },
+                "recorder_tracked_objects_config": {
+                    "chicken_wrap": {
+                        "chicken_wrap": "/scene/chicken_wrap/Mesh0",
+                        "plate": "/scene/plate/Mesh0"
+                    },
+                    "chicken_leg": {
+                        "chicken_leg": "/scene/leg/Mesh0",
+                        "plate": "/scene/plate/Mesh0"
+                    },
+                    "carrot": {
+                        "carrot": "/scene/carrot/Mesh0",
+                        "plate": "/scene/plate/Mesh0"
+                    }
+                },
+                "movable_object_prims": [
+                    "/scene/chicken_wrap/Mesh0",
+                    "/scene/leg/Mesh0",
+                    "/scene/carrot/Mesh0",
+                    "/scene/plate/Mesh0"
+                ]
             }
         }
     ]

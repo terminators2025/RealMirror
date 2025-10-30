@@ -50,7 +50,77 @@
             "L_ring_2_joint",
             "L_little_1_joint",
             "L_little_2_joint"
-        ]
+        ],
+        "gripper_config": {
+            "right": {
+                "stage1_joints": [
+                    "R_thumb_swing_joint"
+                ],
+                "stage1_closed_angles_deg": [
+                    90.0
+                ],
+                "stage2_joints": [
+                    "R_thumb_1_joint",
+                    "R_thumb_2_joint",
+                    "R_thumb_3_joint",
+                    "R_index_1_joint",
+                    "R_index_2_joint",
+                    "R_middle_1_joint",
+                    "R_middle_2_joint",
+                    "R_ring_1_joint",
+                    "R_ring_2_joint",
+                    "R_little_1_joint",
+                    "R_little_2_joint"
+                ],
+                "stage2_closed_angles_deg": [
+                    12.0,
+                    12.0,
+                    12.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0
+                ]
+            },
+            "left": {
+                "stage1_joints": [
+                    "L_thumb_swing_joint"
+                ],
+                "stage1_closed_angles_deg": [
+                    90.0
+                ],
+                "stage2_joints": [
+                    "L_thumb_1_joint",
+                    "L_thumb_2_joint",
+                    "L_thumb_3_joint",
+                    "L_index_1_joint",
+                    "L_index_2_joint",
+                    "L_middle_1_joint",
+                    "L_middle_2_joint",
+                    "L_ring_1_joint",
+                    "L_ring_2_joint",
+                    "L_little_1_joint",
+                    "L_little_2_joint"
+                ],
+                "stage2_closed_angles_deg": [
+                    12.0,
+                    12.0,
+                    12.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0
+                ]
+            }
+        }
     },
     "scene": [
         {
@@ -118,6 +188,19 @@
                     "xy_threshold": 0.05,
                     "z_threshold": -0.1
                 }
+            },
+            "teleoper_cfg": {
+                "recorder_tracked_objects_config": {
+                    "cup": {
+                        "cup_1": "/scene/cup_01/tmp7ih5sl_a_ply/tmp7ih5sl_a_ply",
+                        "cup_2": "/scene/cup_02/tmp7ih5sl_a_ply/tmp7ih5sl_a_ply"
+                    }
+                },
+                "movable_object_prims": [
+                    "/scene/cup_01/tmp7ih5sl_a_ply/tmp7ih5sl_a_ply",
+                    "/scene/stawberry/P_Strawberry_GRP/ExteriorLayer_GEO",
+                    "/scene/cup_02/tmp7ih5sl_a_ply/tmp7ih5sl_a_ply"
+                ]
             }
         }
     ]

@@ -5,8 +5,8 @@
         "physics_params": {
             "default_kp": 400.0,
             "default_kd": 40.0,
-            "finger_kp": 1.0e10,
-            "finger_kd": 6.00e7,
+            "finger_kp": 8000,
+            "finger_kd": 120,
             "finger_max_force": 1.0e10
         },
         "arm_joint_angles_rad": {
@@ -50,7 +50,77 @@
             "L_ring_2_joint",
             "L_little_1_joint",
             "L_little_2_joint"
-        ]
+        ],
+                "gripper_config": {
+            "right": {
+                "stage1_joints": [
+                    "R_thumb_swing_joint"
+                ],
+                "stage1_closed_angles_deg": [
+                    90.0
+                ],
+                "stage2_joints": [
+                    "R_thumb_1_joint",
+                    "R_thumb_2_joint",
+                    "R_thumb_3_joint",
+                    "R_index_1_joint",
+                    "R_index_2_joint",
+                    "R_middle_1_joint",
+                    "R_middle_2_joint",
+                    "R_ring_1_joint",
+                    "R_ring_2_joint",
+                    "R_little_1_joint",
+                    "R_little_2_joint"
+                ],
+                "stage2_closed_angles_deg": [
+                    12.0,
+                    12.0,
+                    12.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0
+                ]
+            },
+            "left": {
+                "stage1_joints": [
+                    "L_thumb_swing_joint"
+                ],
+                "stage1_closed_angles_deg": [
+                    90.0
+                ],
+                "stage2_joints": [
+                    "L_thumb_1_joint",
+                    "L_thumb_2_joint",
+                    "L_thumb_3_joint",
+                    "L_index_1_joint",
+                    "L_index_2_joint",
+                    "L_middle_1_joint",
+                    "L_middle_2_joint",
+                    "L_ring_1_joint",
+                    "L_ring_2_joint",
+                    "L_little_1_joint",
+                    "L_little_2_joint"
+                ],
+                "stage2_closed_angles_deg": [
+                    12.0,
+                    12.0,
+                    12.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0,
+                    38.0
+                ]
+            }
+        }
     },
     "scene": [
         {
@@ -64,13 +134,13 @@
                 {
                     "name": "red",
                     "description": "Pick up the red can on the left and place it in the middle, then pick up the red can on the right and place it on top of the can in the middle",
-                    "cylinder_prim_path": "/scene/_05_tomato_soup_can",
-                    "target_prim_path": "/scene/_05_tomato_soup_can_01"
+                    "cylinder_prim_path": "/scene/_05_tomato_soup_can_01",
+                    "target_prim_path": "/scene/_05_tomato_soup_can"
                 }
             ],
             "fix_objects_info": [
                 {
-                    "prim_path": "/scene/_02_master_chef_can",
+                    "prim_path": "/scene/_02_master_chef_can_01",
                     "position": [
                         0.4304599,
                         -0.2549301,
@@ -99,7 +169,7 @@
                 }
             ],
             "sampled_active_object": [
-                "/scene/_02_master_chef_can_01",
+                "/scene/_02_master_chef_can",
                 "/scene/_05_tomato_soup_can"
             ],
             "scene_id": "taks_4",
@@ -154,6 +224,78 @@
                     "xy_threshold": 0.07,
                     "z_threshold": -0.2
                 }
+            },
+            "teleoper_cfg": {
+                "data_collection_anchor": {
+                    "/scene/_02_master_chef_can": {
+                        "position": [
+                            0.3528441,
+                            0.12306633,
+                            0.08082285
+                        ],
+                        "orientation": [
+                            -7.0710689e-01,
+                            7.0710683e-01,
+                            4.3073669e-09,
+                            4.9349183e-09
+                        ]
+                    },
+                    "/scene/_02_master_chef_can_01": {
+                        "position": [
+                            0.4304599,
+                            -0.2549301,
+                            0.08270397
+                        ],
+                        "orientation": [
+                            -7.0710689e-01,
+                            7.0710683e-01,
+                            4.3073669e-09,
+                            4.9349183e-09
+                        ]
+                    },
+                    "/scene/_05_tomato_soup_can": {
+                        "position": [
+                            0.3528441,
+                            0.12306633,
+                            0.08219924
+                        ],
+                        "orientation": [
+                            -7.0710689e-01,
+                            7.0710683e-01,
+                            4.3073669e-09,
+                            4.9349183e-09
+                        ]
+                    },
+                    "/scene/_05_tomato_soup_can_01": {
+                        "position": [
+                            0.4304599,
+                            -0.2549301,
+                            0.08270397
+                        ],
+                        "orientation": [
+                            -7.0710689e-01,
+                            7.0710683e-01,
+                            4.3073669e-09,
+                            4.9349183e-09
+                        ]
+                    }
+                },
+                "recorder_tracked_objects_config": {
+                    "red": {
+                        "can_1": "/scene/_05_tomato_soup_can",
+                        "can_2": "/scene/_05_tomato_soup_can_01"
+                    },
+                    "blue": {
+                        "can_1": "/scene/_02_master_chef_can",
+                        "can_2": "/scene/_02_master_chef_can_01"
+                    }
+                },
+                "movable_object_prims": [
+                    "/scene/_02_master_chef_can",
+                    "/scene/_02_master_chef_can_01",
+                    "/scene/_05_tomato_soup_can",
+                    "/scene/_05_tomato_soup_can_01"
+                ]
             }
         }
     ]

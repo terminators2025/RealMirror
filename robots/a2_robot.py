@@ -1,17 +1,17 @@
 # Copyright 2025 ZTE Corporation.
 # All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
 #
-# https://www.apache.org/licenses/LICENSE-2.0
+#         http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 
 import numpy as np
 from typing import Optional, List, Tuple, Dict, Any
@@ -51,7 +51,7 @@ class A2Robot(BaseRobot):
 
         self.robot_descriptors = {}
 
-    def initialize(self, world, simulation_app):
+    def initialize(self, world, simulation_app, mode: str):
 
         Logger.info("Initializing A2 Robot...")
 
@@ -73,11 +73,10 @@ class A2Robot(BaseRobot):
         self.robot_ref.initialize()
         self.robot_view.initialize()
 
-        # self._setup_finger_physics_attr()
+        if mode == 'teleop':
+            self._setup_finger_physics_attr()
         self._setup_physics_gains()
         self._create_fixed_joint(world)
-        self._load_robot_descriptors()
-
         self._set_initial_joint_positions()
         for _ in range(10):
             world.step(render=False)
@@ -208,9 +207,9 @@ class A2Robot(BaseRobot):
             "stage2": self._get_joint_indices(config["stage2_joints"]),
         }
 
-        # Initialize gripper angles (open state)
+        # Initialize gripper angle (open state)
         open_angles = np.zeros(len(all_joints), dtype=np.float32)
-        # thumb_swing_joint initial angle is 90 degrees
+        # thumb_swing_joint is initialized to 90 degrees
         if all_joints[0].endswith("thumb_swing_joint"):
             open_angles[0] = np.deg2rad(90.0)
 
@@ -257,7 +256,7 @@ class A2Robot(BaseRobot):
             joint.CreateBody1Rel().SetTargets([torso_prim.GetPath()])
             Logger.info("Created fixed joint between ground and robot")
         else:
-            Logger.warn("Could not create fixed joint")
+            Logger.warning("Could not create fixed joint")
 
     def _get_joint_indices(self, joint_names: List[str]) -> List[int]:
 
@@ -267,7 +266,7 @@ class A2Robot(BaseRobot):
             if idx != -1:
                 indices.append(idx)
             else:
-                Logger.warn(f"Joint {name} not found")
+                Logger.warning(f"Joint {name} not found")
         return indices
 
     def update_gripper(self, arm: str, action: str, dt: float):
@@ -275,7 +274,7 @@ class A2Robot(BaseRobot):
         if not self.robot_ref or not self.robot_ref.is_valid():
             return
 
-        # Handle action
+        # Process action
         if action == "toggle":
             if self.gripper_states[arm] == self.GRIPPER_STATE_OPEN:
                 self.gripper_states[arm] = self.GRIPPER_STATE_CLOSING_S1
@@ -300,7 +299,7 @@ class A2Robot(BaseRobot):
         current_angles = self.gripper_current_angles[arm].copy()
         all_converged = True
 
-        # Determine the target for the current stage
+        # Determine the goal of the current stage
         if state == self.GRIPPER_STATE_CLOSING_S1:
             active_indices = self.gripper_dof_indices[arm]["stage1"]
             target_angles = np.array(config["stage1_closed_angles"])
@@ -311,7 +310,7 @@ class A2Robot(BaseRobot):
             joint_names = config["stage2_joints"]
         elif state == self.GRIPPER_STATE_OPENING:
             active_indices = self.gripper_dof_indices[arm]["all"]
-            # Open angle: 90 degrees for thumb_swing, 0 for others
+            # Open angle: except for thumb_swing which is 90 degrees, others are 0
             target_angles = np.zeros(len(self.gripper_all_joint_names[arm]))
             if self.gripper_all_joint_names[arm][0].endswith("thumb_swing_joint"):
                 target_angles[0] = np.deg2rad(90.0)
@@ -319,7 +318,7 @@ class A2Robot(BaseRobot):
         else:
             return
 
-        # Update angles
+        # Update angle
         angles_to_apply = []
         indices_to_apply = []
 
@@ -384,7 +383,7 @@ class A2Robot(BaseRobot):
         current_angle = current_positions[dof_idx]
         delta = self.config.wrist_roll_speed * dt
 
-        # Reverse for the left arm
+        # Left arm inverted
         if arm == "left":
             delta = -delta if direction == "negative" else delta
         else:
@@ -425,6 +424,17 @@ class A2Robot(BaseRobot):
         except Exception as e:
             Logger.warning(f"Could not get end effector pose for {arm}: {e}")
             return np.zeros(3), np.array([1, 0, 0, 0])
+
+    def get_end_effector_link_path(self, arm: str) -> str:
+        """Get the end effector link path for the specified arm.
+        
+        Args:
+            arm: Arm identifier ("left" or "right").
+            
+        Returns:
+            Full prim path to the end effector link.
+        """
+        return f"{self.config.prim_path}/raise_a2_t2d0_flagship/{arm}_arm_link07"
 
     def set_wrist_roll_state(self, arm: str, direction: str, active: bool):
 

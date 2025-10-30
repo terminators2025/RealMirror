@@ -1,0 +1,17 @@
+{
+  "name": "xr_linker",
+  "version": "1.0.0",
+  "description": "XR Linker - A real-time communication framework for XR devices.",
+  "main": "loader.js",
+  "scripts": {
+    "start": "node loader.js"
+  },
+  "dependencies": {
+    "bytenode": "^1.5.7",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "socket.io": "^4.7.1",
+    "winston": "^3.18.3",
+    "winston-daily-rotate-file": "^5.0.0"
+  }
+}

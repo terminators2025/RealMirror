@@ -1,5 +1,5 @@
 diff --git a/lerobot/common/policies/act/configuration_act.py b/lerobot/common/policies/act/configuration_act.py
-index 7a5819b7..3e4cc4ec 100644
+index 7a5819b7..5140ed00 100644
 --- a/lerobot/common/policies/act/configuration_act.py
 +++ b/lerobot/common/policies/act/configuration_act.py
 @@ -92,8 +92,8 @@ class ACTConfig(PreTrainedConfig):
@@ -13,6 +13,15 @@ index 7a5819b7..3e4cc4ec 100644
  
      normalization_mapping: dict[str, NormalizationMode] = field(
          default_factory=lambda: {
+@@ -126,7 +126,7 @@ class ACTConfig(PreTrainedConfig):
+ 
+     # Inference.
+     # Note: the value used in ACT when temporal ensembling is enabled is 0.01.
+-    temporal_ensemble_coeff: float | None = None
++    temporal_ensemble_coeff: float | None = 0.01
+ 
+     # Training and loss computation.
+     dropout: float = 0.1
 @@ -145,11 +145,6 @@ class ACTConfig(PreTrainedConfig):
              raise ValueError(
                  f"`vision_backbone` must be one of the ResNet variants. Got {self.vision_backbone}."
@@ -92,7 +101,7 @@ index e7e74bf3..23515328 100644
      def forward(self, batch: dict[str, Tensor]) -> tuple[Tensor, dict]:
          """Run the batch through the model and compute the loss for training or validation."""
 diff --git a/lerobot/common/policies/diffusion/configuration_diffusion.py b/lerobot/common/policies/diffusion/configuration_diffusion.py
-index c8841f06..ecad235e 100644
+index c8841f06..94756fd8 100644
 --- a/lerobot/common/policies/diffusion/configuration_diffusion.py
 +++ b/lerobot/common/policies/diffusion/configuration_diffusion.py
 @@ -104,9 +104,9 @@ class DiffusionConfig(PreTrainedConfig):
@@ -135,7 +144,7 @@ index c8841f06..ecad235e 100644
  
 +    # Inference.
 +    # Note: the value used when temporal ensembling is enabled is 0.01.
-+    temporal_ensemble_coeff: float | None = None
++    temporal_ensemble_coeff: float | None = 0.01
 +
      # Training presets
      optimizer_lr: float = 1e-4
@@ -570,7 +579,7 @@ index fb5077fb..14ba67dc 100644
          super().train(mode)
  
 diff --git a/lerobot/common/policies/smolvla/configuration_smolvla.py b/lerobot/common/policies/smolvla/configuration_smolvla.py
-index 5996cf2e..f6f9b619 100644
+index 5996cf2e..f6d9be53 100644
 --- a/lerobot/common/policies/smolvla/configuration_smolvla.py
 +++ b/lerobot/common/policies/smolvla/configuration_smolvla.py
 @@ -27,8 +27,8 @@ from lerobot.configs.types import FeatureType, NormalizationMode, PolicyFeature
@@ -596,7 +605,7 @@ index 5996cf2e..f6f9b619 100644
  
 +    # Inference.
 +    # Note: the value used when temporal ensembling is enabled is 0.01.
-+    temporal_ensemble_coeff: float | None = None
++    temporal_ensemble_coeff: float | None = 0.01
 +
      # Training presets
      optimizer_lr: float = 1e-4

@@ -15,12 +15,8 @@
 
 import argparse
 
-parser = argparse.ArgumentParser(
-    description="Run evaluation for trained models in Isaac Sim"
-)
-parser.add_argument(
-    "--task", type=str, default="Task1_Kitchen_Cleanup", help="Task configuration name"
-)
+parser = argparse.ArgumentParser(description="Run evaluation for trained models in Isaac Sim")
+parser.add_argument("--task", type=str, default="Task1_Kitchen_Cleanup", help="Task configuration name")
 parser.add_argument(
     "--model-type",
     type=str,
@@ -29,43 +25,29 @@ parser.add_argument(
     help="Type of model to use",
 )
 parser.add_argument("--model-path", type=str, help="Path to pretrained model")
-parser.add_argument(
-    "--headless", action="store_true", help="Run in headless mode without GUI"
-)
+parser.add_argument("--headless", action="store_true", help="Run in headless mode without GUI")
 parser.add_argument(
     "--arc2gear",
     action="store_true",
     help="Use gear position conversion for hand joints",
 )
-parser.add_argument(
-    "--num-rollouts", type=int, default=400, help="Number of evaluation rollouts"
-)
-parser.add_argument(
-    "--max-horizon", type=int, default=400, help="Maximum steps per rollout"
-)
+parser.add_argument("--num-rollouts", type=int, default=400, help="Number of evaluation rollouts")
+parser.add_argument("--max-horizon", type=int, default=400, help="Maximum steps per rollout")
 parser.add_argument(
     "--use-stability-check",
     action="store_true",
     help="Enable stability check for success condition",
 )
-parser.add_argument(
-    "--resume-dir", type=str, default=None, help="Path to resume evaluation from"
-)
-parser.add_argument(
-    "--output-dir", type=str, default="runs/eval", help="Path to save evaluation output"
-)
+parser.add_argument("--resume-dir", type=str, default=None, help="Path to resume evaluation from")
+parser.add_argument("--output-dir", type=str, default="runs/eval", help="Path to save evaluation output")
 parser.add_argument(
     "--area-file",
     type=str,
     default="data/eval/data_area/data_area_task1.txt",
     help="Path to area definition file",
 )
-parser.add_argument(
-    "--xy-threshold", type=float, default=0.07, help="XY distance threshold for success"
-)
-parser.add_argument(
-    "--z-threshold", type=float, default=0.2, help="Z distance threshold for success"
-)
+parser.add_argument("--xy-threshold", type=float, default=0.07, help="XY distance threshold for success")
+parser.add_argument("--z-threshold", type=float, default=0.2, help="Z distance threshold for success")
 parser.add_argument(
     "--stability-frames",
     type=int,
@@ -155,6 +137,7 @@ from evaluate.inference_evaluator import (
 )
 import utility.system_utils as system_utils
 
+
 class EvaluationRunner:
 
     def __init__(self, args):
@@ -197,14 +180,12 @@ class EvaluationRunner:
         self.scene_manager = SceneManager(self.world, self.sim_config)
         self.scene_manager._load_scene_usd()
 
-        self.cameras = CameraConfig.create_cameras_from_task_config(
-            self.task_config, self.robot_config
-        )
+        self.cameras = CameraConfig.create_cameras_from_task_config(self.task_config, self.robot_config)
 
         self._setup_task_configurations()
         self._initialize_task_objects()
         self.robot = RobotFactory.create_robot(self.robot_type, self.robot_config)
-        self.robot.initialize(self.world, simulation_app=simulation_app)
+        self.robot.initialize(self.world, simulation_app=simulation_app, mode="eval")
 
         self._setup_joint_indices()
         self.scene_manager._adjust_ground_plane()
@@ -236,36 +217,22 @@ class EvaluationRunner:
         self._try_load_scene_physics_params()
         self._load_fixed_objects_info()
 
-        sim_config_path = os.path.join(
-            project_root, "comm_config", "configs", "simulation_config.json"
-        )
+        sim_config_path = os.path.join(project_root, "comm_config", "configs", "simulation_config.json")
         self.sim_config = SimulationConfig.from_json(sim_config_path, self.task_config)
 
-        if (
-            "scene" in self.task_config
-            and self.task_config["scene"]
-            and "eval_cfg" in self.task_config["scene"][0]
-        ):
+        if "scene" in self.task_config and self.task_config["scene"] and "eval_cfg" in self.task_config["scene"][0]:
             eval_cfg = self.task_config["scene"][0]["eval_cfg"]
             model_config = eval_cfg["model"]
             model_root_dir = model_config["model_root_dir"]
             Logger.info(f"Model root dir: {model_root_dir}")
             models_path = {}
             for model_name, model_path in model_config["checkpoints_dir"].items():
-                models_path[model_name] = os.path.join(
-                    model_root_dir, self.args.task, model_path
-                )
+                models_path[model_name] = os.path.join(model_root_dir, self.args.task, model_path)
                 Logger.info(f"{model_name} path: {models_path[model_name]}")
 
-            xy_threshold = eval_cfg["success_criteria"].get(
-                "xy_threshold", self.args.xy_threshold
-            )
-            z_threshold = eval_cfg["success_criteria"].get(
-                "z_threshold", self.args.z_threshold
-            )
-            Logger.info(
-                f"Using xy_threshold: {xy_threshold}, z_threshold: {z_threshold}"
-            )
+            xy_threshold = eval_cfg["success_criteria"].get("xy_threshold", self.args.xy_threshold)
+            z_threshold = eval_cfg["success_criteria"].get("z_threshold", self.args.z_threshold)
+            Logger.info(f"Using xy_threshold: {xy_threshold}, z_threshold: {z_threshold}")
 
             self.eval_config = EvalConfig(
                 models_path=models_path,
@@ -353,9 +320,7 @@ class EvaluationRunner:
             "R_little_2_joint",
         ]
 
-        action_joint_names = (
-            left_arm_joints + right_arm_joints + left_hand_mimic + right_hand_mimic
-        )
+        action_joint_names = left_arm_joints + right_arm_joints + left_hand_mimic + right_hand_mimic
 
         try:
             action_indices = [dof_map[name] for name in action_joint_names]
@@ -368,12 +333,8 @@ class EvaluationRunner:
     def _setup_inference(self):
         model_path = self.args.model_path
         if self.eval_config and self.eval_config.models_path:
-            models_path_lower = {
-                k.lower(): v for k, v in self.eval_config.models_path.items()
-            }
-            model_path = models_path_lower.get(
-                self.args.model_type.lower(), self.args.model_path
-            )
+            models_path_lower = {k.lower(): v for k, v in self.eval_config.models_path.items()}
+            model_path = models_path_lower.get(self.args.model_type.lower(), self.args.model_path)
         Logger.info(f"Model[{self.args.model_type.lower()}] path: {model_path}")
         inference_config = InferenceConfig(
             model_type=self.args.model_type,
@@ -415,9 +376,7 @@ class EvaluationRunner:
                 task_config = {
                     "name": obj_info.name,
                     "task_name": (
-                        obj_info.description
-                        if hasattr(obj_info, "description")
-                        else f"Task for {obj_info.name}"
+                        obj_info.description if hasattr(obj_info, "description") else f"Task for {obj_info.name}"
                     ),
                     "cylinder_prim_path": obj_info.cylinder_prim_path,
                     "target_prim_path": obj_info.target_prim_path,
@@ -444,17 +403,11 @@ class EvaluationRunner:
             ]:
                 prim_path = config.get(prim_path_key)
                 if prim_path and prim_path not in self.all_task_prims:
-                    Logger.info(
-                        f"[1]Checking additional object path: {prim_path_key} -> {prim_path}"
-                    )
+                    Logger.info(f"[1]Checking additional object path: {prim_path_key} -> {prim_path}")
                     if stage.GetPrimAtPath(prim_path):
-                        Logger.info(
-                            f"[2]Checking additional object path: {prim_path_key} -> {prim_path}"
-                        )
+                        Logger.info(f"[2]Checking additional object path: {prim_path_key} -> {prim_path}")
                         prim_name = prim_path.replace("/", "_")
-                        prim = self.world.scene.add(
-                            RigidPrim(prim_path=prim_path, name=prim_name)
-                        )
+                        prim = self.world.scene.add(RigidPrim(prim_path=prim_path, name=prim_name))
                         self.all_task_prims[prim_path] = prim
 
                         if prim and prim.is_valid():
@@ -463,9 +416,7 @@ class EvaluationRunner:
                                 np.copy(pos),
                                 np.copy(orn),
                             )
-                            Logger.info(
-                                f"initialized {prim_path_key}: {prim_path} on [{pos[0]}, {pos[1]}]"
-                            )
+                            Logger.info(f"initialized {prim_path_key}: {prim_path} on [{pos[0]}, {pos[1]}]")
 
     def reset_environment(self):
 
@@ -476,7 +427,7 @@ class EvaluationRunner:
             initial_positions = self.task_config["robot"].get("arm_joint_angles_rad", {})
             hand_joints_to_configure = self.task_config["robot"].get("hand_joints_to_configure", [])
             current_positions = self.robot.get_joint_positions()
-            
+
             if current_positions is not None:
                 for joint_name, angle in initial_positions.items():
                     idx = self.robot.get_dof_index(joint_name)
@@ -492,7 +443,7 @@ class EvaluationRunner:
                             current_positions[idx] = 0.0
 
                 self.robot.set_joint_positions(current_positions)
-                Logger.info(f'Robot reset to initial joint positions. {current_positions}')
+                Logger.info(f"Robot reset to initial joint positions. {current_positions}")
 
         for path, prim in self.all_task_prims.items():
             initial_pose = self.pristine_initial_poses.get(path)
@@ -507,18 +458,14 @@ class EvaluationRunner:
         task_idx = rollout_idx % len(self.task_configurations)
         self.current_task_config = self.task_configurations[task_idx]
 
-        Logger.info(
-            f"[Task] Setting up task: {json.dumps(self.current_task_config, indent=4)}"
-        )
+        Logger.info(f"[Task] Setting up task: {json.dumps(self.current_task_config, indent=4)}")
 
         if "task_name" in self.current_task_config:
             self.inference_engine.set_task_name(self.current_task_config["task_name"])
 
         for path, prim in self.all_task_prims.items():
             Logger.info(f"Prim {path} moved safely Area.")
-            move_prim_safely(
-                prim, np.array([999.0, 999.0, 999.0]), np.array([1.0, 0.0, 0.0, 0.0])
-            )
+            move_prim_safely(prim, np.array([999.0, 999.0, 999.0]), np.array([1.0, 0.0, 0.0, 0.0]))
 
         if rollout_idx < len(self.evaluation_points):
             point = self.evaluation_points[rollout_idx]
@@ -530,20 +477,13 @@ class EvaluationRunner:
                 "basket_prim_path",
             ]
             current_active_objs_prime = [
-                self.current_task_config.get(x)
-                for x in prime_key_path
-                if self.current_task_config.get(x)
+                self.current_task_config.get(x) for x in prime_key_path if self.current_task_config.get(x)
             ]
             Logger.info(f"current_active_objs_prime: {current_active_objs_prime}")
             for current_active_obj_prime in current_active_objs_prime:
-                if (
-                    current_active_obj_prime
-                    and current_active_obj_prime in self.all_task_prims
-                ):
+                if current_active_obj_prime and current_active_obj_prime in self.all_task_prims:
                     active_prim = self.all_task_prims[current_active_obj_prime]
-                    pristine_pose = self.pristine_initial_poses.get(
-                        current_active_obj_prime
-                    )
+                    pristine_pose = self.pristine_initial_poses.get(current_active_obj_prime)
                     if self.fixed_objects_info:
                         for fix_obj in self.fixed_objects_info:
                             if fix_obj.get("prim_path") == current_active_obj_prime:
@@ -552,23 +492,15 @@ class EvaluationRunner:
                                     np.array(fix_obj.get("position")),
                                     np.array(fix_obj.get("orientation")),
                                 )
-                                Logger.info(
-                                    f"- Placed object[{current_active_obj_prime}] at fixed position"
-                                )
+                                Logger.info(f"- Placed object[{current_active_obj_prime}] at fixed position")
                     elif pristine_pose:
-                        move_prim_safely(
-                            active_prim, pristine_pose[0], pristine_pose[1]
-                        )
-                        Logger.info(
-                            f"- Placed object[{current_active_obj_prime}] at initial position"
-                        )
+                        move_prim_safely(active_prim, pristine_pose[0], pristine_pose[1])
+                        Logger.info(f"- Placed object[{current_active_obj_prime}] at initial position")
 
             for active_object_prim_path in self.sim_config.sampled_active_object:
                 if active_object_prim_path in current_active_objs_prime:
                     active_prim = self.all_task_prims[active_object_prim_path]
-                    pristine_pose = self.pristine_initial_poses.get(
-                        active_object_prim_path
-                    )
+                    pristine_pose = self.pristine_initial_poses.get(active_object_prim_path)
                     if pristine_pose:
                         new_pos = np.copy(pristine_pose[0])
                         new_pos[0] = point[0]
@@ -580,19 +512,13 @@ class EvaluationRunner:
 
     def run_inference_step(self):
 
-        state = self.inference_engine.get_observation_state(
-            self.robot_view, self.state_joint_indices
-        )
+        state = self.inference_engine.get_observation_state(self.robot_view, self.state_joint_indices)
         if state is None:
             return
 
         head_image = get_camera_image(self.cameras.get("head_camera"), "rgb")
-        left_wrist_image = get_camera_image(
-            self.cameras.get("left_wrist_camera"), "rgb"
-        )
-        right_wrist_image = get_camera_image(
-            self.cameras.get("right_wrist_camera"), "rgb"
-        )
+        left_wrist_image = get_camera_image(self.cameras.get("left_wrist_camera"), "rgb")
+        right_wrist_image = get_camera_image(self.cameras.get("right_wrist_camera"), "rgb")
 
         if head_image is None or left_wrist_image is None or right_wrist_image is None:
             return
@@ -646,9 +572,7 @@ class EvaluationRunner:
                     )
             else:
                 if self.stability_counter > 0:
-                    Logger.debug(
-                        "  [Stability Check] Unstable frame detected Reset counter"
-                    )
+                    Logger.debug("  [Stability Check] Unstable frame detected Reset counter")
                 self.stability_counter = 0
 
             return self.stability_counter >= self.args.stability_frames
@@ -663,9 +587,7 @@ class EvaluationRunner:
 
     def run_single_rollout(self, rollout_idx: int) -> Dict:
         rollout_start_time = time.time()
-        Logger.info(
-            f"--- [Rollout {rollout_idx + 1}/{len(self.evaluation_points)}] ---"
-        )
+        Logger.info(f"--- [Rollout {rollout_idx + 1}/{len(self.evaluation_points)}] ---")
 
         self.setup_rollout_environment(rollout_idx)
 
@@ -696,9 +618,7 @@ class EvaluationRunner:
             "success": 1 if is_successful else 0,
             "rollout_path": "",
             "task_name": self.current_task_config.get("task_name", ""),
-            "cylinder_prim_path": self.current_task_config.get(
-                "cylinder_prim_path", ""
-            ),
+            "cylinder_prim_path": self.current_task_config.get("cylinder_prim_path", ""),
             "target_prim_path": self.current_task_config.get("target_prim_path", ""),
         }
 
@@ -707,11 +627,11 @@ class EvaluationRunner:
         target_path = self.current_task_config.get("target_prim_path")
         if cylinder_path and target_path:
             log_object_reached_target_details(
-                name = self.current_task_config.get('name', ''),
-                moving_prim_path = cylinder_path,
-                target_prim_path = target_path,
-                xy_threshold = self.eval_config.xy_threshold,
-                z_threshold = self.eval_config.z_threshold,
+                name=self.current_task_config.get("name", ""),
+                moving_prim_path=cylinder_path,
+                target_prim_path=target_path,
+                xy_threshold=self.eval_config.xy_threshold,
+                z_threshold=self.eval_config.z_threshold,
             )
 
         if is_successful:
@@ -732,7 +652,9 @@ class EvaluationRunner:
         self.frame_buffer = []
 
         rollout_duration = time.time() - rollout_start_time
-        Logger.info(f"Rollout {rollout_idx + 1} completed in {rollout_duration:.2f} seconds ({rollout_duration/60:.2f} minutes)")
+        Logger.info(
+            f"Rollout {rollout_idx + 1} completed in {rollout_duration:.2f} seconds ({rollout_duration/60:.2f} minutes)"
+        )
 
         return result
 
@@ -743,77 +665,100 @@ class EvaluationRunner:
             self.do_evaluation()
 
     def do_evaluation(self):
-        banner = "=" * 50
-        Logger.info(
-            f"\n{banner}\nStarting evaluation: {self.args.num_rollouts} rollouts\n{banner}\n"
-        )
+        """Main evaluation function for standard tasks"""
+        self._print_evaluation_banner()
 
+        csv_path = self._setup_output_directory()
+        start_rollout = self._load_or_initialize_evaluation_data(csv_path)
+
+        self._prepare_world_for_evaluation()
+
+        start_time = time.time()
+        self._execute_evaluation_rollouts(start_rollout, csv_path)
+
+        self._log_final_evaluation_results(start_time)
+        self.generate_visualizations()
+
+    def _print_evaluation_banner(self):
+        """Print evaluation start banner"""
+        banner = "=" * 50
+        Logger.info(f"\n{banner}\nStarting evaluation: {self.args.num_rollouts} rollouts\n{banner}\n")
+
+    def _setup_output_directory(self):
+        """Setup and return output directory and CSV path"""
         if self.args.resume_dir:
             self.output_dir = Path(self.args.resume_dir)
             Logger.info(f"Resuming evaluation from: {self.output_dir}")
         else:
             output_base_dir = Path(self.args.output_dir) if self.args.output_dir else Path("runs/eval")
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.output_dir = (
-                output_base_dir
-                / f"{self.args.task}"
-                / f"{self.args.model_type}_{timestamp}"
-            )
+            self.output_dir = output_base_dir / f"{self.args.task}" / f"{self.args.model_type}_{timestamp}"
             Logger.info(f"Starting new evaluation, output to: {self.output_dir}")
-        
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        csv_path = self.output_dir / "evaluation_data.csv"
 
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        return self.output_dir / "evaluation_data.csv"
+
+    def _load_or_initialize_evaluation_data(self, csv_path):
+        """Load existing evaluation data or initialize new data"""
         start_rollout = 0
-        bbox = None
 
         if csv_path.exists():
-            df_existing, start_rollout = load_evaluation_progress(csv_path)
-            if not df_existing.empty:
-                self.all_results_data = df_existing.to_dict("records")
-                self.evaluation_points = df_existing[["x", "y"]].to_numpy()
-                Logger.info(
-                    f"Loaded {len(df_existing)} existing results, starting from rollout {start_rollout + 1}"
-                )
+            start_rollout = self._load_existing_evaluation_data(csv_path)
 
         if start_rollout == 0 and not self.all_results_data:
+            self._generate_new_evaluation_data()
 
-            Logger.info("Generating new evaluation points...")
-            base_points = load_area_points_from_txt(self.args.area_file)
-            if base_points is None:
-                Logger.error("Failed to load area definition file")
-                return
+        return start_rollout
 
-            self.evaluation_points, bbox = generate_uniform_grid_points(
-                base_points, self.args.num_rollouts
+    def _load_existing_evaluation_data(self, csv_path):
+        """Load existing evaluation progress from CSV"""
+        df_existing, start_rollout = load_evaluation_progress(csv_path)
+        if not df_existing.empty:
+            self.all_results_data = df_existing.to_dict("records")
+            self.evaluation_points = df_existing[["x", "y"]].to_numpy()
+            Logger.info(f"Loaded {len(df_existing)} existing results, starting from rollout {start_rollout + 1}")
+        return start_rollout
+
+    def _generate_new_evaluation_data(self):
+        """Generate new evaluation points and initialize results data"""
+        Logger.info("Generating new evaluation points...")
+
+        base_points = load_area_points_from_txt(self.args.area_file)
+        if base_points is None:
+            Logger.error("Failed to load area definition file")
+            return False
+
+        self.evaluation_points, bbox = generate_uniform_grid_points(base_points, self.args.num_rollouts)
+        if self.evaluation_points is None:
+            Logger.error("Failed to generate evaluation points")
+            return False
+
+        for i, point in enumerate(self.evaluation_points):
+            task_idx = i % len(self.task_configurations)
+            config = self.task_configurations[task_idx]
+            self.all_results_data.append(
+                {
+                    "rollout_idx": i,
+                    "x": point[0],
+                    "y": point[1],
+                    "success": -1,
+                    "rollout_path": "",
+                    "task_name": config.get("task_name", ""),
+                    "cylinder_prim_path": config.get("cylinder_prim_path", ""),
+                    "target_prim_path": config.get("target_prim_path", ""),
+                }
             )
-            if self.evaluation_points is None:
-                Logger.error("Failed to generate evaluation points")
-                return
+        return True
 
-            for i, point in enumerate(self.evaluation_points):
-                task_idx = i % len(self.task_configurations)
-                config = self.task_configurations[task_idx]
-                self.all_results_data.append(
-                    {
-                        "rollout_idx": i,
-                        "x": point[0],
-                        "y": point[1],
-                        "success": -1,
-                        "rollout_path": "",
-                        "task_name": config.get("task_name", ""),
-                        "cylinder_prim_path": config.get("cylinder_prim_path", ""),
-                        "target_prim_path": config.get("target_prim_path", ""),
-                    }
-                )
-
+    def _prepare_world_for_evaluation(self):
+        """Prepare the simulation world for evaluation"""
         self.world.play()
-
         Logger.info("Stabilizing scene...")
         for _ in range(50):
             self.world.step(render=True)
 
-        start_time = time.time()
+    def _execute_evaluation_rollouts(self, start_rollout, csv_path):
+        """Execute all evaluation rollouts"""
         success_count = sum(1 for r in self.all_results_data if r.get("success") == 1)
 
         for i in range(start_rollout, len(self.evaluation_points)):
@@ -823,15 +768,13 @@ class EvaluationRunner:
             if result["success"] == 1:
                 success_count += 1
 
-            save_evaluation_progress(
-                self.all_results_data, csv_path, self.args.model_type
-            )
+            save_evaluation_progress(self.all_results_data, csv_path, self.args.model_type)
 
             current_rate = (success_count / (i + 1)) * 100
-            Logger.info(
-                f"Current success rate: {current_rate:.2f}% ({success_count}/{i + 1})"
-            )
+            Logger.info(f"Current success rate: {current_rate:.2f}% ({success_count}/{i + 1})")
 
+    def _log_final_evaluation_results(self, start_time):
+        """Log final evaluation results and statistics"""
         end_time = time.time()
         duration = end_time - start_time
 
@@ -839,18 +782,14 @@ class EvaluationRunner:
         Logger.info(f"{self.args.task} Evaluation Complete")
         Logger.info(f"Total time: {duration:.2f} seconds ({duration/60:.1f} minutes)")
         Logger.info(
-            f"Final success rate: {(success_count/len(self.evaluation_points))*100:.2f}%"
+            f"Final success rate: {(sum(1 for r in self.all_results_data if r.get('success') == 1)/len(self.evaluation_points))*100:.2f}%"
         )
         Logger.info("=" * 50 + "\n")
-
-        self.generate_visualizations()
 
     def do_evaluation_task3(self):
         """Main evaluation function for Task3 Assembly Line Sorting"""
         banner = "=" * 50
-        Logger.info(
-            f"\n{banner}\nStarting evaluation: {self.args.num_rollouts} rollouts\n{banner}\n"
-        )
+        Logger.info(f"\n{banner}\nStarting evaluation: {self.args.num_rollouts} rollouts\n{banner}\n")
 
         self.output_dir, csv_path = self._setup_task3_output_directory()
         start_rollout = self._load_or_initialize_task3_data(csv_path)
@@ -866,9 +805,7 @@ class EvaluationRunner:
             if i < len(self.all_results_data) and self.all_results_data[i]["success"] == 1:
                 success_count += 1
             current_rate = (success_count / (i + 1)) * 100
-            Logger.info(
-                f"Current success rate: {current_rate:.2f}% ({success_count}/{i + 1})"
-            )
+            Logger.info(f"Current success rate: {current_rate:.2f}% ({success_count}/{i + 1})")
 
         self._log_task3_final_results(start_time)
 
@@ -880,13 +817,9 @@ class EvaluationRunner:
         else:
             output_base_dir = Path(self.args.output_dir) if self.args.output_dir else Path("runs/eval")
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_dir = (
-                output_base_dir
-                / f"{self.args.task}"
-                / f"{self.args.model_type}_{timestamp}"
-            )
+            output_dir = output_base_dir / f"{self.args.task}" / f"{self.args.model_type}_{timestamp}"
             Logger.info(f"Starting new evaluation, output to: {output_dir}")
-        
+
         output_dir.mkdir(parents=True, exist_ok=True)
         csv_path = output_dir / "evaluation_data.csv"
 
@@ -902,9 +835,7 @@ class EvaluationRunner:
             if not df_existing.empty:
                 self.all_results_data = df_existing.to_dict("records")
                 self.evaluation_points = df_existing[["x", "y"]].to_numpy()
-                Logger.info(
-                    f"Loaded {len(df_existing)} existing results, starting from rollout {start_rollout + 1}"
-                )
+                Logger.info(f"Loaded {len(df_existing)} existing results, starting from rollout {start_rollout + 1}")
 
         if not self.all_results_data:
             for i in range(self.args.num_rollouts):
@@ -935,14 +866,14 @@ class EvaluationRunner:
         final_step = self._execute_task3_simulation_steps(rollout_idx)
         sub_success = self._evaluate_task3_results(rollout_idx)
 
-        self._finalize_task3_rollout_result(
-            rollout_idx, sub_success, final_step, csv_path
-        )
+        self._finalize_task3_rollout_result(rollout_idx, sub_success, final_step, csv_path)
         self.is_recording = False
         self.frame_buffer = []
 
         rollout_duration = time.time() - rollout_start_time
-        Logger.info(f"Rollout {rollout_idx + 1} completed in {rollout_duration:.2f} seconds ({rollout_duration/60:.2f} minutes)")
+        Logger.info(
+            f"Rollout {rollout_idx + 1} completed in {rollout_duration:.2f} seconds ({rollout_duration/60:.2f} minutes)"
+        )
 
     def _setup_task3_rollout_environment(self):
         """Setup environment for a single Task3 rollout"""
@@ -957,9 +888,7 @@ class EvaluationRunner:
                         np.array([999.0, 999.0, 999.0]),
                         np.array([1.0, 0.0, 0.0, 0.0]),
                     )
-                    Logger.info(
-                        f' {object_cfg["cylinder_prim_path"]} Moved Out of the Scene'
-                    )
+                    Logger.info(f' {object_cfg["cylinder_prim_path"]} Moved Out of the Scene')
 
             if "plate_prim_path" in object_cfg:
                 if object_cfg["plate_prim_path"] in self.all_task_prims.keys():
@@ -968,9 +897,7 @@ class EvaluationRunner:
                         np.array([999.0, 999.0, 999.0]),
                         np.array([1.0, 0.0, 0.0, 0.0]),
                     )
-                    Logger.info(
-                        f' {object_cfg["plate_prim_path"]} Moved Out of the Scene'
-                    )
+                    Logger.info(f' {object_cfg["plate_prim_path"]} Moved Out of the Scene')
 
     def _ensure_environment_stabilization(self, steps=30):
         """Stabilize the environment after setup"""
@@ -992,21 +919,15 @@ class EvaluationRunner:
             if step == 0 and len(spawn_names) > 0:
                 Logger.info(f"Spawning object: {spawn_names[0]} at step {step}")
                 self._spawn_task3_object(object_spawn_order[spawn_names[0]])
-                self.inference_engine.set_task_name(
-                    object_spawn_order[spawn_names[0]].get("task_name", "")
-                )
+                self.inference_engine.set_task_name(object_spawn_order[spawn_names[0]].get("task_name", ""))
             elif step == 500 and len(spawn_names) > 1:
                 Logger.info(f"Spawning object: {spawn_names[1]} at step {step}")
                 self._spawn_task3_object(object_spawn_order[spawn_names[1]])
-                self.inference_engine.set_task_name(
-                    object_spawn_order[spawn_names[1]].get("task_name", "")
-                )
+                self.inference_engine.set_task_name(object_spawn_order[spawn_names[1]].get("task_name", ""))
             elif step == 1000 and len(spawn_names) > 2:
                 Logger.info(f"Spawning object: {spawn_names[2]} at step {step}")
                 self._spawn_task3_object(object_spawn_order[spawn_names[2]])
-                self.inference_engine.set_task_name(
-                    object_spawn_order[spawn_names[2]].get("task_name", "")
-                )
+                self.inference_engine.set_task_name(object_spawn_order[spawn_names[2]].get("task_name", ""))
 
             self.world.step(render=True)
             self.run_inference_step()
@@ -1037,9 +958,7 @@ class EvaluationRunner:
         if plate_path and plate_path in self.all_task_prims:
             pristine_pose = self.pristine_initial_poses.get(plate_path)
             if pristine_pose:
-                move_prim_safely(
-                    self.all_task_prims[plate_path], pristine_pose[0], pristine_pose[1]
-                )
+                move_prim_safely(self.all_task_prims[plate_path], pristine_pose[0], pristine_pose[1])
 
     def _check_all_task3_subtasks_complete(self):
         """Check if all Task3 subtasks are completed"""
@@ -1055,21 +974,17 @@ class EvaluationRunner:
             is_object_succeeded = self.check_task_success(task_object)
             sub_success[task_object["name"]] = is_object_succeeded
             log_object_reached_target_details(
-                name=task_object.get('name', ''),
+                name=task_object.get("name", ""),
                 moving_prim_path=task_object["cylinder_prim_path"],
                 target_prim_path=task_object["target_prim_path"],
                 xy_threshold=self.eval_config.xy_threshold,
                 z_threshold=self.eval_config.z_threshold,
             )
-            self.all_results_data[rollout_idx][f'success_{task_object["name"]}'] = (
-                1 if is_object_succeeded else 0
-            )
+            self.all_results_data[rollout_idx][f'success_{task_object["name"]}'] = 1 if is_object_succeeded else 0
 
         return sub_success
 
-    def _finalize_task3_rollout_result(
-        self, rollout_idx, sub_success, final_step, csv_path
-    ):
+    def _finalize_task3_rollout_result(self, rollout_idx, sub_success, final_step, csv_path):
         """Finalize and save the result of a Task3 rollout"""
         final_success = all(sub_success.values())
         self.all_results_data[rollout_idx]["success"] = 1 if final_success else 0
@@ -1078,16 +993,10 @@ class EvaluationRunner:
             Logger.info(f"--- Result: SUCCESS (at step {final_step}) ---\n")
             self.all_results_data[rollout_idx]["rollout_path"] = ""
         else:
-            Logger.info(
-                f"--- Result: FAILURE (reached max steps {self.args.max_horizon}) ---"
-            )
-            failure_rollout_video_path = (
-                self.output_dir / f"failed_rollout_{rollout_idx + 1}.mp4"
-            )
+            Logger.info(f"--- Result: FAILURE (reached max steps {self.args.max_horizon}) ---")
+            failure_rollout_video_path = self.output_dir / f"failed_rollout_{rollout_idx + 1}.mp4"
             save_frames_to_video(self.frame_buffer, str(failure_rollout_video_path))
-            self.all_results_data[rollout_idx]["rollout_path"] = str(
-                failure_rollout_video_path
-            )
+            self.all_results_data[rollout_idx]["rollout_path"] = str(failure_rollout_video_path)
 
         save_evaluation_progress(self.all_results_data, csv_path, self.args.model_type)
 
@@ -1105,18 +1014,14 @@ class EvaluationRunner:
             if not final_df.empty:
                 completed_rollouts = len(final_df[final_df["success"] != -1])
                 if completed_rollouts > 0:
-                    total_success_rate = (
-                        final_df["success"].sum() / completed_rollouts
-                    ) * 100
+                    total_success_rate = (final_df["success"].sum() / completed_rollouts) * 100
                     Logger.info(
                         f"Final success rate: {total_success_rate:.1f}% ({final_df['success'].sum()}/{completed_rollouts})"
                     )
                     Logger.info("\n--- Sub-task Success Rates ---")
                     for task_object in self.task_configurations:
                         task_name = task_object["name"]
-                        sub_rate = (
-                            final_df[f"success_{task_name}"].sum() / completed_rollouts
-                        ) * 100
+                        sub_rate = (final_df[f"success_{task_name}"].sum() / completed_rollouts) * 100
                         Logger.info(
                             f"  - {task_name.capitalize()} Success Rate: {sub_rate:.1f}% ({final_df[f'success_{task_name}'].sum()}/{completed_rollouts})"
                         )

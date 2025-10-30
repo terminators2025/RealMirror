@@ -19,11 +19,11 @@
  - [x] Checkpoints
 
 **Before October 30, 2025**
- - [ ] Training code
- - [ ] Datasets
- - [ ] Data collection
- - [ ] Teleoperation
- - [ ] Toolchains
+ - [x] Training code
+ - [] Datasets
+ - [x] Data collection
+ - [x] Teleoperation
+ - [x] Toolchains
 
 # 1. Overview
 The emerging field of Vision-Language-Action (VLA) for humanoid robots faces several fundamental challenges, including the high cost of data acquisition, the lack of a standardized benchmark, and the significant gap between simulation and the real world. To overcome these obstacles, we propose RealMirror, a comprehensive, open-source embodied AI VLA platform. RealMirror builds an efficient, low-cost data collection, model training, and inference system that enables end-to-end VLA research without requiring a real robot. To facilitate model evolution and fair comparison, we also introduce a dedicated VLA benchmark for humanoid robots, featuring multiple scenarios, extensive trajectories, and various VLA models. Furthermore, by integrating generative models and 3D Gaussian Splatting to reconstruct realistic environments and robot models, we successfully demonstrate zero-shot Sim2Real transfer, where models trained exclusively on simulation data can perform tasks on a real robot seamlessly, without any fine-tuning. In conclusion, with the unification of these critical components, RealMirror provides a robust framework that significantly accelerates the development of VLA models for humanoid robots.
@@ -116,7 +116,6 @@ $isaac_sim_dir/python.sh -m pip install -e .
 ### 2.4 Usage
 
 ### 2.4 Benchmark Tasks
-
 
 #### 2.4.1 Benchmark Task Config
 The benchmark configuration is defined in a JSON file, such as `Task1_Kitchen_Cleanup.json`. This file specifies all the necessary parameters for the robot, scene, and evaluation.
@@ -286,6 +285,70 @@ isaacsim_py script/eval.py --task Task5_Air_Fryer_Manipulation --model-type smol
   [SmolVLM2-500M-Video-Instruct on Hugging Face](https://huggingface.co/HuggingFaceTB/SmolVLM2-500M-Video-Instruct)
 
   After downloading, ensure the model is placed in the root directory of this project.
-  ## Star History
 
+### 2.5  Teleoperation
+
+#### 2.5.1 Start XR-Linker
+See <a href="docs/xr_linker_quik_start.md">xr_linker_quik_start.md</a> for instructions on how to use XR-Linker to connect 
+pico and control.
+
+#### 2.5.2 🚀 Launch Simulation Environment
+- **Basic control parameters**
+
+|    ⚙️ Parameter  |                        📜 Description                         |
+| :----------: | :----------------------------------------------------------: |
+|  `--task`  | Name of the task configuration file in the 'tasks' directory (e.g., 'Task_1_Kitchen_Cleanup'). |
+| `--output-dir` |        Set data recording output directory.         |
+|   `--disable_recorder`    |                  Disable **data recording**.                  |
+|--hide_ik_targets| If set, the visual target cubes for IK teleoperation will be hidden
+
+Assuming Task1_Kitchen_Cleanup in simulation with recording:
+```bash
+$isaac_sim_dir/python.sh script/teleop.py --hide_ik_targets --task Task1_Kitchen_Cleanup --output-dir /data/record
+```
+
+### 2.6 Training
+
+### 2.6.1 Enviroment Setup
+We recommend using our provided <a href="docker/train/Dockerfile">DockerFile</a> to build a Docker image as the base environment for training. See <a href="docs/docker_build.md">docker_build.md</a> for instructions on how to build the image.
+
+### 2.6.2 Dataset Download
+
+- **Download the Data**
+   - Access the train data from our xx Drive: [RealMirror Train Data](https)
+   - The dataset includes  all benchmark tasks datas.
+   - Total download size: approximately 13 GB
+
+- **Extract and Setup**
+   - After downloading, extract the compressed archive to your local directory
+   - We recommend extracting to a dedicated folder, for example: `~/RealMirror_train_dataset/`
+   - Ensure the extracted directory structure matches the following organization:
+
+  - **Data Structure**
+  ./RealMirror_train_dataset
+  ├── Task1_Kitchen_Cleanup
+  ├── Task2_Cup_to_Cup_Transfer
+  ├── Task3_Assembly_Line_Sorting
+  ├── Task4_Can_Stacking
+  └── Task5_Air_Fryer_Manipulation
+
+
+
+### 2.6.3 Run training script
+**Example:**
+```bash
+bash script/train.sh  -d <dataset_path> -p <policy_type> -o <output_directory_name>  [-- <python_args>]
+
+#<dataset_path>          Path to the root of the dataset
+#<policy_type>           The type of policy to train. Available: act | diffusion | smolvla.
+#<output_directory_name> Suffix for the output directory
+# For example, train Task1 with Act Model as:
+# bash script/train.sh -d datasets/Task1_Kitchen_Cleanup -p act -o task1_act
+```
+
+**Notes:**
+The `--` separator is used to distinguish arguments intended for the `train.sh` script from those that should be passed directly to the underlying `python` command. Any arguments appearing after `--` will be forwarded to the Python training script without modification.This command passes the `-- --steps 200000` argument directly to the Python script.
+
+
+## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=date&legend=top-left)](https://www.star-history.com/#terminators2025/RealMirror&type=date&legend=top-left)

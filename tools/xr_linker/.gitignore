@@ -1,0 +1,31 @@
+# 环境变量
+.env
+
+# 日志文件
+logs/
+*.log
+
+# 数据文件
+data/
+
+# 依赖
+node_modules/
+
+# 构建输出
+dist/
+*.jsc
+.temp_compile/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+*.tmp
+*.temp
