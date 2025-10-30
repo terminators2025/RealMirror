@@ -20,7 +20,7 @@
 
 **Before October 30, 2025**
  - [x] Training code
- - [] Datasets
+ - [ ] Datasets
  - [x] Data collection
  - [x] Teleoperation
  - [x] Toolchains
