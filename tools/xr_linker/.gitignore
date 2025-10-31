@@ -9,7 +9,7 @@ logs/
 data/
 
 # 依赖
-node_modules/
+node_modules
 
 # 构建输出
 dist/
