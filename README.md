@@ -18,7 +18,7 @@
  - [x] Scene assets
  - [x] Checkpoints
 
-**Before October 30, 2025**
+**Before October 30, 2025(Datasets Uploading)**
  - [x] Training code
  - [ ] Datasets
  - [x] Data collection
