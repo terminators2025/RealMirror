@@ -42,6 +42,13 @@ DATA_STORAGE_MAX_FILES=100
 # Socket.IO configuration
 SOCKET_CORS_ORIGIN=*
 ```
+
+### 1.3 Run Server
+
+```bash
+npm start
+```
+
 ## 2. Connect the XR Device
 Next steps:
 
