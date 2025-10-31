@@ -307,6 +307,72 @@ Assuming Task1_Kitchen_Cleanup in simulation with recording:
 $isaac_sim_dir/python.sh script/teleop.py --hide_ik_targets --task Task1_Kitchen_Cleanup --output-dir /data/record
 ```
 
+#### 2.5.3 Replay and Verify Recorded Data
+
+After collecting teleoperation data, you can use the replay script to verify the recorded demonstrations in Isaac Sim before converting to training format.
+
+**Basic Usage**
+
+```bash
+$isaac_sim_dir/python.sh script/replay.py --task <task_name> --hdf5_path <path_to_hdf5_file>
+```
+
+**Example:**
+```bash
+$isaac_sim_dir/python.sh script/replay.py --task Task1_Kitchen_Cleanup --hdf5_path /data/record/recorded_data.hdf5
+```
+
+**Replay Controls:**
+- **S** key: Play/Pause replay
+- **R** key: Reset current demo to initial state
+- **N** key: Load next demo in sequence
+
+The replay script will restore the robot and scene to the initial state of each demonstration and playback the recorded actions, allowing you to visually verify data quality before training.
+
+For detailed information about replay features, troubleshooting, and technical details, see <a href="docs/replay.md">replay.md</a>.
+
+#### 2.5.4 Convert HDF5 Data to LeRobot Format
+
+The teleoperation data collected by `teleop.py` is saved in HDF5 format. Before training, you need to convert it to LeRobot dataset format using the `convert.py` script.
+
+**Basic Usage**
+
+```bash
+python3 script/convert.py <output_dir> --data_pairs <data_pairs.json> [--arc2gear]
+```
+
+**Key Arguments:**
+- `output_dir`: Output directory for the converted LeRobot dataset
+- `--data_pairs`: JSON file containing HDF5 file paths and task descriptions (required)
+- `--arc2gear`: Enable hand joint arc-to-gear conversion (optional)
+
+**Data Pairs JSON Format:**
+
+```json
+[
+    {
+        "h5_path": "/path/to/recorded_data_Task1.hdf5",
+        "task_name": "Put the red potato chips on the left into the yellow basket on the right"
+    }
+]
+```
+
+**Example:**
+```bash
+python3 script/convert.py /path/to/output \
+    --data_pairs Task1_data_pair.json \
+    --arc2gear
+```
+
+The converter will generate a LeRobot-compatible dataset with the following structure:
+```
+output_dir/
+├── data/           # Episode data in Parquet format
+└── meta/           # Metadata files (info.json, episodes.jsonl, etc.)
+```
+
+For detailed usage instructions, command-line options, troubleshooting, and technical details, see <a href="docs/convert_script_usage.md">convert_script_usage.md</a>.
+
 ### 2.6 Training
 
 ### 2.6.1 Enviroment Setup
@@ -317,7 +383,7 @@ We recommend using our provided <a href="docker/train/Dockerfile">DockerFile</a>
 - **Download the Data**
    - Access the train data from our xx Drive: [RealMirror Train Data](https)
    - The dataset includes  all benchmark tasks datas.
-   - Total download size: approximately 13 GB
+   - Total download size: approximately 70 GB
 
 - **Extract and Setup**
    - After downloading, extract the compressed archive to your local directory
@@ -325,14 +391,15 @@ We recommend using our provided <a href="docker/train/Dockerfile">DockerFile</a>
    - Ensure the extracted directory structure matches the following organization:
 
   - **Data Structure**
+
+```
   ./RealMirror_train_dataset
-  ├── Task1_Kitchen_Cleanup
-  ├── Task2_Cup_to_Cup_Transfer
-  ├── Task3_Assembly_Line_Sorting
-  ├── Task4_Can_Stacking
-  └── Task5_Air_Fryer_Manipulation
-
-
+        ├── Task1_Kitchen_Cleanup
+        ├── Task2_Cup_to_Cup_Transfer
+        ├── Task3_Assembly_Line_Sorting
+        ├── Task4_Can_Stacking
+        └── Task5_Air_Fryer_Manipulation
+```
 
 ### 2.6.3 Run training script
 **Example:**
@@ -349,6 +416,43 @@ bash script/train.sh  -d <dataset_path> -p <policy_type> -o <output_directory_na
 **Notes:**
 The `--` separator is used to distinguish arguments intended for the `train.sh` script from those that should be passed directly to the underlying `python` command. Any arguments appearing after `--` will be forwarded to the Python training script without modification.This command passes the `-- --steps 200000` argument directly to the Python script.
 
+### 2.6.4 Model Inference and Validation
+
+After training, you can validate the trained models in Isaac Sim using the inference script before running full benchmark evaluations.
+
+**Basic Usage**
+
+```bash
+$isaac_sim_dir/python.sh script/infer.py --task <task_name> --model-type <model_type> --model-path <path_to_model>
+```
+
+**Key Arguments:**
+- `--task`: Task name (e.g., `Task1_Kitchen_Cleanup`)
+- `--model-type`: Model architecture (`act`, `diffusion`, or `smolvla`)
+- `--model-path`: Path to the trained model checkpoint
+- `--arc2gear`: Enable arc-to-gear conversion (use if model was trained with gear positions)
+- `--headless`: Run without GUI (optional)
+
+**Example:**
+```bash
+$isaac_sim_dir/python.sh script/infer.py \
+    --task Task1_Kitchen_Cleanup \
+    --model-type act \
+    --model-path outputs/task1_act/checkpoints/last/pretrained_model \
+    --arc2gear
+```
+
+**Interactive Controls:**
+- **S** key: Start/Stop inference
+- **R** key: Reset environment to initial state
+- **Q** key: Quit application
+- **Arrow keys**: Manually adjust object positions
+- **Numpad 0**: Reset active object pose
+- **Numpad 1-3**: Select different objects
+
+The inference script allows you to interactively test trained models, visualize robot behaviors, and verify task completion before running comprehensive benchmark evaluations.
+
+For detailed information about inference configuration, troubleshooting, and advanced usage, see <a href="docs/infer.md">infer.md</a>.
 
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=date&legend=top-left)](https://www.star-history.com/#terminators2025/RealMirror&type=date&legend=top-left)
