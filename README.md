@@ -18,9 +18,9 @@
  - [x] Scene assets
  - [x] Checkpoints
 
-**Before October 30, 2025(Datasets Uploading)**
+**Before October 30, 2025**
  - [x] Training code
- - [ ] Datasets
+ - [x] Datasets
  - [x] Data collection
  - [x] Teleoperation
  - [x] Toolchains
@@ -381,7 +381,7 @@ We recommend using our provided <a href="docker/train/Dockerfile">DockerFile</a>
 ### 2.6.2 Dataset Download
 
 - **Download the Data**
-   - Access the train data from our xx Drive: [RealMirror Train Data](https)
+   - Access the train data from our xx Drive: [RealMirror Train Data](https://pan.baidu.com/s/1tF9wZduDmpsJfu68YsSnTw?pwd=real)
    - The dataset includes  all benchmark tasks datas.
    - Total download size: approximately 70 GB
 
