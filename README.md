@@ -454,5 +454,14 @@ The inference script allows you to interactively test trained models, visualize 
 
 For detailed information about inference configuration, troubleshooting, and advanced usage, see <a href="docs/infer.md">infer.md</a>.
 
+# 3. Set up IDE (Optional)
+
+To configure your IDE for optimal development experience, follow these steps:
+
+- Open the VSCode Command Palette by pressing `Ctrl+Shift+P`, select `Tasks: Run Task`, and choose `setup_python_env` from the dropdown menu.
+- When prompted, provide the absolute path to your Isaac Sim installation directory.
+
+Upon successful execution, the `python.analysis.extraPaths` field in the `settings.json` file (located in the `.vscode` directory) will be automatically configured with Python paths to all extensions provided by Isaac Sim and Omniverse. This enables intelligent code completion and module indexing for enhanced development productivity.
+
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=date&legend=top-left)](https://www.star-history.com/#terminators2025/RealMirror&type=date&legend=top-left)
