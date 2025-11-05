@@ -488,5 +488,19 @@ To configure your IDE for optimal development experience, follow these steps:
 
 Upon successful execution, the `python.analysis.extraPaths` field in the `settings.json` file (located in the `.vscode` directory) will be automatically configured with Python paths to all extensions provided by Isaac Sim and Omniverse. This enables intelligent code completion and module indexing for enhanced development productivity.
 
+
+## Citation
+If you find this work helpful in your research, please consider giving this repo a star ⭐ and citing our paper:
+
+```bibtex
+@article{tai2025realmirror,
+        title={RealMirror: A Comprehensive, Open-Source Vision-Language-Action Platform for Embodied AI},
+        author={*},
+        journal={arXiv preprint arXiv:2509.14687},
+        year={2025}
+        }
+
+```
+
 ## Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=date&legend=top-left)](https://www.star-history.com/#terminators2025/RealMirror&type=date&legend=top-left)
