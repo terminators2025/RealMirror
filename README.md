@@ -376,7 +376,32 @@ For detailed usage instructions, command-line options, troubleshooting, and tech
 ### 2.6 Training
 
 ### 2.6.1 Enviroment Setup
+We provide two options for setting up the training environment:
+
+**Option 1: Docker Environment (Recommended)**
+
 We recommend using our provided <a href="docker/train/Dockerfile">DockerFile</a> to build a Docker image as the base environment for training. See <a href="docs/docker_build.md">docker_build.md</a> for instructions on how to build the image.
+
+**Option 2: Python/Conda Virtual Environment**
+
+Alternatively, you can set up a Python or Conda virtual environment:
+
+1. **Create a virtual environment:**
+   ```bash
+   # Using Python venv
+   python3 -m venv realmirror_train_env
+   source realmirror_train_env/bin/activate
+   
+   # Or using Conda
+   conda create -n realmirror_train_env python=3.10
+   conda activate realmirror_train_env
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
 
 ### 2.6.2 Dataset Download
 
