@@ -128,14 +128,14 @@
                 {
                     "name": "blue",
                     "description": "Pick up the blue can on the left and place it in the middle, then pick up the blue can on the right and place it on top of the can in the middle",
-                    "cylinder_prim_path": "/scene/_02_master_chef_can_01",
-                    "target_prim_path": "/scene/_02_master_chef_can"
+                    "cylinder_prim_path": "/scene/_02_master_chef_can",
+                    "target_prim_path": "/scene/_02_master_chef_can_01"
                 },
                 {
                     "name": "red",
                     "description": "Pick up the red can on the left and place it in the middle, then pick up the red can on the right and place it on top of the can in the middle",
-                    "cylinder_prim_path": "/scene/_05_tomato_soup_can_01",
-                    "target_prim_path": "/scene/_05_tomato_soup_can"
+                    "cylinder_prim_path": "/scene/_05_tomato_soup_can",
+                    "target_prim_path": "/scene/_05_tomato_soup_can_01"
                 }
             ],
             "fix_objects_info": [
