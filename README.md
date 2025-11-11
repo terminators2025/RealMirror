@@ -10,6 +10,10 @@
   </a>
 </div>
 
+# 🎉News
+- **[coming soon]** On the basis of RealMirror supporting PICO handle teleoperation, MirrorLimb has added gesture teleoperation function. Now you can use PICO to perform more precise and stable control of the robot！
+- **[2025-11-12]** Excited to release the **MirrorLimb** paper! Check it out: [Paper](https://arxiv.org/abs/xxxxxx).
+
 # *Opensource Plan
 **Before October 15, 2025**
  - [x] Inference code
