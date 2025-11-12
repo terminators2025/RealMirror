@@ -11,8 +11,7 @@
 </div>
 
 # 🎉News
-- **[coming soon]** On the basis of RealMirror supporting PICO handle teleoperation, MirrorLimb has added gesture teleoperation function. Now you can use PICO to perform more precise and stable control of the robot！
-- **[2025-11-12]** Excited to release the **MirrorLimb** paper! Check it out: [Paper](https://arxiv.org/abs/xxxxxx).
+- **[coming soon]** [MirrorLimb](https://arxiv.org/abs/xxxxxx) support is coming soon, with the addition of gesture teleoperation functionality. Now you can use PICO to perform more precise and stable control of the robot！
 - **[2025-10-30]** We have released a teleoperation/data acquisition framework and toolchain related to RealMirror.
 - **[2025-10-15]** We have released the RealMirror related evaluation framework, official model weights, and robot/scene assets. 
 - **[2025-09-15]** Excited to release the **Realmirror** paper! Check it out: [Paper](https://arxiv.org/abs/2509.14687).
@@ -506,18 +505,17 @@ To configure your IDE for optimal development experience, follow these steps:
 Upon successful execution, the `python.analysis.extraPaths` field in the `settings.json` file (located in the `.vscode` directory) will be automatically configured with Python paths to all extensions provided by Isaac Sim and Omniverse. This enables intelligent code completion and module indexing for enhanced development productivity.
 
 
-## Citation
+# Citation
 If you find this work helpful in your research, please consider giving this repo a star ⭐ and citing our paper:
 
 ```bibtex
 @article{tai2025realmirror,
-        title={RealMirror: A Comprehensive, Open-Source Vision-Language-Action Platform for Embodied AI},
-        author={*},
-        journal={arXiv preprint arXiv:2509.14687},
-        year={2025}
-        }
-
+  title={RealMirror: A Comprehensive, Open-Source Vision-Language-Action Platform for Embodied AI},
+  author={*},
+  journal={arXiv preprint arXiv:2509.14687},
+  year={2025}
+}
 ```
 
-## Star History
+# Star History
 [![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=date&legend=top-left)](https://www.star-history.com/#terminators2025/RealMirror&type=date&legend=top-left)
