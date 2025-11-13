@@ -11,7 +11,7 @@
 </div>
 
 # 🎉News
-- **[coming soon]** [MirrorLimb](https://arxiv.org/abs/xxxxxx) support is coming soon, with the addition of gesture teleoperation functionality. Now you can use PICO to perform more precise and stable control of the robot！
+- **[coming soon]** [MirrorLimb](https://arxiv.org/abs/2511.08865) support is coming soon, with the addition of gesture teleoperation functionality. Now you can use PICO to perform more precise and stable control of the robot！
 - **[2025-10-30]** We have released a teleoperation/data acquisition framework and toolchain related to RealMirror.
 - **[2025-10-15]** We have released the RealMirror related evaluation framework, official model weights, and robot/scene assets. 
 - **[2025-09-15]** Excited to release the **Realmirror** paper! Check it out: [Paper](https://arxiv.org/abs/2509.14687).
