@@ -48,8 +48,8 @@ To get started with the RealMirror benchmark, you need to download the pre-colle
 
 1. **Download the Data**
    - Access the benchmark data from our Huggingface repository:
-    - [simulation assets](https://huggingface.co/datasets/zte-terminators/realmirror-asset)
-    - [pre-trained models](https://huggingface.co/zte-terminators/realmirror-model-ckpt)
+     - [simulation assets](https://huggingface.co/datasets/zte-terminators/realmirror-asset)
+     - [pre-trained models](https://huggingface.co/zte-terminators/realmirror-model-ckpt)
    - The dataset includes both simulation assets and pre-trained models for all benchmark tasks
    - Total download size: approximately 13 GB
 
