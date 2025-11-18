@@ -47,7 +47,9 @@ The emerging field of Vision-Language-Action (VLA) for humanoid robots faces sev
 To get started with the RealMirror benchmark, you need to download the pre-collected dataset and trained models:
 
 1. **Download the Data**
-   - Access the benchmark data from our Google Drive: [RealMirror Benchmark Data](https://drive.google.com/drive/folders/1A_4cs21x-W4V9r7zRgsiLGJGBPsRRveF?usp=drive_link)
+   - Access the benchmark data from our Huggingface:
+    [simulation assets](https://huggingface.co/datasets/zte-terminators/realmirror-asset)
+     [pre-trained models](https://huggingface.co/zte-terminators/realmirror-model-ckpt)
    - The dataset includes both simulation assets and pre-trained models for all benchmark tasks
    - Total download size: approximately 13 GB
 
