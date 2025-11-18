@@ -48,13 +48,13 @@ To get started with the RealMirror benchmark, you need to download the pre-colle
 
 1. **Download the Data**
    - Access the benchmark data from our Huggingface:
-    [simulation assets](https://huggingface.co/datasets/zte-terminators/realmirror-asset)
+     [simulation assets](https://huggingface.co/datasets/zte-terminators/realmirror-asset)
      [pre-trained models](https://huggingface.co/zte-terminators/realmirror-model-ckpt)
    - The dataset includes both simulation assets and pre-trained models for all benchmark tasks
    - Total download size: approximately 13 GB
 
 > **⚠️ Important Notice for Task1_Kitchen_Cleanup:**
-> 
+> (If you have already downloaded the latest Huggingface assets, please ignore this message!)
 > The Task1_Kitchen_Cleanup scene assets in the original data package contain a bug. Please use the fixed version instead:
 > - [Task1_Kitchen_Cleanup Scene Assets (Fixed Version)](https://drive.google.com/file/d/13Dw5XRjcDcsMeKjh7tS5xTbB0VgI5DqM/view?usp=drive_link)
 > 
@@ -424,7 +424,7 @@ Alternatively, you can set up a Python or Conda virtual environment:
 ### 2.6.2 Dataset Download
 
 - **Download the Data**
-   - Access the train data from our xx Drive: [RealMirror Train Data](https://pan.baidu.com/s/1tF9wZduDmpsJfu68YsSnTw?pwd=real)
+   - Access the train data from our Huggingface: [RealMirror Train Data](https://huggingface.co/datasets/zte-terminators/realmirror-datasets)
    - The dataset includes  all benchmark tasks datas.
    - Total download size: approximately 70 GB
 
