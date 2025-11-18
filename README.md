@@ -424,9 +424,8 @@ Alternatively, you can set up a Python or Conda virtual environment:
 ### 2.6.2 Dataset Download
 
 - **Download the Data**
-   - Access the train data from our Huggingface repository:
+   - Access the train data from our Huggingface repository(The dataset includes all benchmark tasks datas):
      - [RealMirror Train Data](https://huggingface.co/datasets/zte-terminators/realmirror-datasets)
-   - The dataset includes  all benchmark tasks datas.
    - Extra data(Only used for data augmentation, not for training!):
      - [RealMirror Extra Data](https://huggingface.co/datasets/zte-terminators/realmirror-extra-datasets)
    - Total download size: approximately 70 GB
