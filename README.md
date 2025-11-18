@@ -47,7 +47,7 @@ The emerging field of Vision-Language-Action (VLA) for humanoid robots faces sev
 To get started with the RealMirror benchmark, you need to download the pre-collected dataset and trained models:
 
 1. **Download the Data**
-   - Access the benchmark data from our Huggingface:
+   - Access the benchmark data from our Huggingface repository:
      [simulation assets](https://huggingface.co/datasets/zte-terminators/realmirror-asset)
      [pre-trained models](https://huggingface.co/zte-terminators/realmirror-model-ckpt)
    - The dataset includes both simulation assets and pre-trained models for all benchmark tasks
@@ -424,7 +424,7 @@ Alternatively, you can set up a Python or Conda virtual environment:
 ### 2.6.2 Dataset Download
 
 - **Download the Data**
-   - Access the train data from our Huggingface: [RealMirror Train Data](https://huggingface.co/datasets/zte-terminators/realmirror-datasets)
+   - Access the train data from our Huggingface repository: [RealMirror Train Data](https://huggingface.co/datasets/zte-terminators/realmirror-datasets)
    - The dataset includes  all benchmark tasks datas.
    - Total download size: approximately 70 GB
 
