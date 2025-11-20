@@ -189,7 +189,7 @@ Update the following paths to match your extracted benchmark data location:
 ```json
 {
     "usd_path": "/path/to/your/RealMirror_Benchmark_data/assets/robot/AgiBotA2/model_no_col2.usd",
-    "urdf_path": "/path/to/your/RealMirror_Benchmark_data/assets/robot/AgiBotA2/model_no_col2.usd",
+    "urdf_path": "/path/to/your/RealMirror_Benchmark_data/assets/robot/robot/A2_t2d0_flagship_opensource_urdf/urdf/raise_a2_t2d0_flagship/model_no_col.urdf",
     "robot_descriptor_paths": {
         "right": "/path/to/your/RealMirror_Benchmark_data/assets/robot/AgiBotA2/arm_descriptor/a2_right_arm_robot_descriptor.yaml",
         "left": "/path/to/your/RealMirror_Benchmark_data/assets/robot/AgiBotA2/arm_descriptor/a2_left_arm_robot_descriptor.yaml"
