@@ -57,19 +57,19 @@
             "task_related_objects": [
                 {
                     "name": "leshi",
-                    "description": "Put the red potato chips on the left into the yellow basket on the right",
+                    "description": "Pick up the red potato chip and place it into the yellow basket",
                     "cylinder_prim_path": "/scene/new_leshi/Mesh0",
                     "target_prim_path": "/scene/model_basket_22"
                 },
                 {
                     "name": "greentee",
-                    "description": "Put the green tea on the left into the yellow basket on the right",
+                    "description": "Pick up the green tea and place it into the yellow basket",
                     "cylinder_prim_path": "/scene/new_greentee/Mesh0",
                     "target_prim_path": "/scene/model_basket_22"
                 },
                 {
                     "name": "yellowtea",
-                    "description": "Put the lemon tea on the left into the yellow basket on the right",
+                    "description": "Pick up the lemon tea and place it into the yellow basket",
                     "cylinder_prim_path": "/scene/new_yellowtea/Mesh0",
                     "target_prim_path": "/scene/model_basket_22"
                 }
