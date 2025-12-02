@@ -74,7 +74,8 @@ To get started with the RealMirror benchmark, you need to download the pre-colle
 RealMirror_Benchmark_data
 ├── assets
 │   ├── robot
-│   │   └── AgiBotA2
+│   │   ├── AgiBotA2
+│   │   └── A2_t2d0_flagship_opensource_urdf
 │   └── scenes
 │       ├── Task1_Kitchen_Cleanup
 │       ├── Task2_Cup_to_Cup_Transfer
