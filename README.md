@@ -54,7 +54,7 @@ To get started with the RealMirror benchmark, you need to download the pre-colle
    - Total download size: approximately 13 GB
 
 > **⚠️ Important Notice for Task1_Kitchen_Cleanup:**
-> (If you have already downloaded the latest Huggingface assets, please ignore this message!)
+> (If you downloaded the Huggingface assets after November 10, 2025, please ignore this message!)
 > The Task1_Kitchen_Cleanup scene assets in the original data package contain a bug. Please use the fixed version instead:
 > - [Task1_Kitchen_Cleanup Scene Assets (Fixed Version)](https://drive.google.com/file/d/13Dw5XRjcDcsMeKjh7tS5xTbB0VgI5DqM/view?usp=drive_link)
 > 
