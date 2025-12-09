@@ -104,8 +104,8 @@ cd RealMirror
 ```
 2. Fetch lerobot by git submodule command:
 ```bash
-git submodule init
-git submodule update
+GIT_LFS_SKIP_SMUDGE=1 git submodule init
+GIT_LFS_SKIP_SMUDGE=1 git submodule update
 cd thirdparty/lerobot
 
 # Checkout and apply patch of lerobot
