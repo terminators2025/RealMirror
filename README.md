@@ -53,16 +53,6 @@ To get started with the RealMirror benchmark, you need to download the pre-colle
    - The dataset includes both simulation assets and pre-trained models for all benchmark tasks
    - Total download size: approximately 13 GB
 
-#> ⚠️ Important Notice for Task1_Kitchen_Cleanup:
-#> (If you downloaded the Huggingface assets after November 10, 2025, please ignore this message!)
-#> The Task1_Kitchen_Cleanup scene assets in the original data package contain a bug. Please use the fixed version instead:
-#> - [Task1_Kitchen_Cleanup Scene Assets (Fixed Version)](https://drive.google.com/file/d/13Dw5XRjcDcsMeKjh7tS5xTbB0VgI5DqM/view?usp=drive_link)
-#> 
-#> After downloading, extract and replace the original `Task1_Kitchen_Cleanup` folder in:
-#> ```
-#> RealMirror_Benchmark_data/assets/scenes/Task1_Kitchen_Cleanup/
-#> ```
-
 2. **Extract and Setup**
    - After downloading, extract the compressed archive to your local directory
    - We recommend extracting to a dedicated folder, for example: `~/RealMirror_Benchmark_data/`
