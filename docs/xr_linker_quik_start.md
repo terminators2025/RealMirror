@@ -7,7 +7,11 @@
 ## 1. Install XR-Linker
 
 ### 1.1 Install Dependencies
+node version need 22.19.0
 ```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+nvm install 22.19.0
+nvm use 22.19.0
 cd tools/xr_linker
 npm install
 ```
