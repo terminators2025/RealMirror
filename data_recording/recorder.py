@@ -250,6 +250,12 @@ class DataRecorder:
         if not self.object_manager or not self.object_manager.current_tracked_objects:
             return
 
+        # Get current active group key
+        group_key = self.object_manager.get_active_group_name()
+        if not group_key:
+            Logger.warning("[Recorder] No active group found, skipping object state capture")
+            return
+
         for obj_name, tracked_obj in self.object_manager.current_tracked_objects.items():
             try:
                 if not tracked_obj.handle or not tracked_obj.handle.is_valid():
@@ -261,12 +267,14 @@ class DataRecorder:
 
                 if obj_pos is not None and obj_quat_wxyz is not None:
                     obj_quat_xyzw = self._convert_quat_wxyz_to_xyzw(obj_quat_wxyz)
-                    self.initial_state_buffer[f"rigid_object/{obj_name}/root_pose"] = np.concatenate(
+                    # Include group_key in the HDF5 path structure
+                    self.initial_state_buffer[f"rigid_object/{group_key}/{obj_name}/root_pose"] = np.concatenate(
                         [obj_pos, obj_quat_xyzw]
                     ).reshape(1, -1)
 
                 if obj_lin_vel is not None and obj_ang_vel is not None:
-                    self.initial_state_buffer[f"rigid_object/{obj_name}/root_velocity"] = np.concatenate(
+                    # Include group_key in the HDF5 path structure
+                    self.initial_state_buffer[f"rigid_object/{group_key}/{obj_name}/root_velocity"] = np.concatenate(
                         [obj_lin_vel, obj_ang_vel]
                     ).reshape(1, -1)
             except Exception as e:
@@ -482,6 +490,11 @@ class DataRecorder:
         if not tracked_obj.handle or not tracked_obj.handle.is_valid():
             return
         
+        # Get current active group key
+        group_key = self.object_manager.get_active_group_name()
+        if not group_key:
+            return
+        
         obj_pos, obj_quat_wxyz = tracked_obj.handle.get_world_pose()
         obj_lin_vel = tracked_obj.handle.get_linear_velocity()
         obj_ang_vel = tracked_obj.handle.get_angular_velocity()
@@ -491,14 +504,14 @@ class DataRecorder:
         
         obj_quat_xyzw = self._convert_quat_wxyz_to_xyzw(obj_quat_wxyz)
         
-        # Save pose: [pos(3), quat_xyzw(4)] = 7D
+        # Save pose: [pos(3), quat_xyzw(4)] = 7D - Include group_key in path
         obj_pose = np.concatenate([obj_pos, obj_quat_xyzw])
-        self._add_to_buffer(f"states/rigid_object/{obj_name}/root_pose", obj_pose)
+        self._add_to_buffer(f"states/rigid_object/{group_key}/{obj_name}/root_pose", obj_pose)
         
-        # Save velocity: [lin_vel(3), ang_vel(3)] = 6D
+        # Save velocity: [lin_vel(3), ang_vel(3)] = 6D - Include group_key in path
         if obj_lin_vel is not None and obj_ang_vel is not None:
             obj_velocity = np.concatenate([obj_lin_vel, obj_ang_vel])
-            self._add_to_buffer(f"states/rigid_object/{obj_name}/root_velocity", obj_velocity)
+            self._add_to_buffer(f"states/rigid_object/{group_key}/{obj_name}/root_velocity", obj_velocity)
             
             # Save observation data (fully consistent with the original script)
             self._add_to_buffer(f"obs/{obj_name}_pos", obj_pos)

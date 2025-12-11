@@ -90,7 +90,7 @@ class ReplayManager:
         self.scene_manager = SceneManager(self.world, self.sim_config, task_config=self.task_config)
         self.scene_manager._load_scene_usd()
         self.scene_manager._create_object_manager()
-        
+
         self.robot = RobotFactory.create_robot(self.robot_type, self.robot_config)
         self.robot.initialize(self.world, simulation_app=simulation_app, mode="replay")
 
@@ -128,7 +128,6 @@ class ReplayManager:
 
         with open(task_config_path, "r", encoding="utf-8") as f:
             self.task_config = json.load(f)
-
 
         Logger.info(f"Loaded task configuration: {task_name}")
 
@@ -352,55 +351,69 @@ class ReplayManager:
             return
 
         object_manager = self.scene_manager.object_manager
-        
+
         rigid_object_group_key = "rigid_object"
         if rigid_object_group_key not in initial_state:
             Logger.warning("No rigid_object group found in initial_state")
             return
-        
-        rigid_object_group = initial_state[rigid_object_group_key]
-        object_names = list(rigid_object_group.keys())
-        
-        if not object_names:
-            Logger.warning("No objects found in rigid_object group")
-            return
-        
-        Logger.info(f"Dynamic mode: found {len(object_names)} objects to restore: {object_names}")
-        
-        for obj_name in object_names:
-            if hasattr(object_manager, 'set_active_group'):
-                object_manager.set_active_group(obj_name)
-                Logger.info(f"Set active object: {obj_name}")
-            
-            pose_key = f"rigid_object/{obj_name}/root_pose"
-            if pose_key not in initial_state:
-                Logger.warning(f"No initial pose data for object: {obj_name}")
-                continue
-            
-            tracked_objects = object_manager.recorder_tracked_objects
-            if obj_name not in tracked_objects:
-                Logger.warning(f"Object {obj_name} not in recorder_tracked_objects")
-                continue
-            
-            tracked_obj = tracked_objects[obj_name]
-            if not tracked_obj.handle or not tracked_obj.handle.is_valid():
-                Logger.warning(f"Invalid handle for object: {obj_name}")
-                continue
-            
-            # Load pose: [pos(3), quat_xyzw(4)]
-            obj_pose = np.array(initial_state[pose_key])[0]
-            pos = obj_pose[:3]
-            quat_xyzw = obj_pose[3:7]
-            
-            # Convert quaternion from xyzw to wxyz for Isaac Sim
-            quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
-            
-            # Apply state
-            tracked_obj.handle.set_world_pose(position=pos, orientation=quat_wxyz)
-            tracked_obj.handle.set_linear_velocity(np.zeros(3))
-            tracked_obj.handle.set_angular_velocity(np.zeros(3))
 
-            Logger.info(f"Restored state for object: {obj_name} with position[{pos}]")
+        rigid_object_group = initial_state[rigid_object_group_key]
+        group_keys = list(rigid_object_group.keys())
+
+        if not group_keys:
+            Logger.warning("No group keys found in rigid_object group")
+            return
+
+        Logger.info(f"Found {len(group_keys)} object groups to restore: {group_keys}")
+
+        # Process each group
+        for group_key in group_keys:
+            # Set the active group first
+            if hasattr(object_manager, "set_active_group"):
+                success = object_manager.set_active_group(group_key)
+                if not success:
+                    Logger.warning(f"Failed to set active group: {group_key}")
+                    continue
+                Logger.info(f"Set active group: {group_key}")
+            
+            # Get object names in this group
+            group_data = rigid_object_group[group_key]
+            object_names = list(group_data.keys())
+            
+            if not object_names:
+                Logger.warning(f"No objects found in group {group_key}")
+                continue
+            
+            Logger.info(f"Restoring {len(object_names)} objects in group '{group_key}': {object_names}")
+            
+            # Restore each object in the group
+            for obj_name in object_names:
+                pose_key = f"rigid_object/{group_key}/{obj_name}/root_pose"
+                if pose_key not in initial_state:
+                    Logger.warning(f"No initial pose data for object: {group_key}/{obj_name}")
+                    continue
+
+                # Get the tracked object from current_tracked_objects (populated by set_active_group)
+                if obj_name not in object_manager.current_tracked_objects:
+                    Logger.warning(f"Object {obj_name} not in current_tracked_objects for group {group_key}")
+                    continue
+
+                tracked_obj = object_manager.current_tracked_objects[obj_name]
+                if not tracked_obj.handle or not tracked_obj.handle.is_valid():
+                    Logger.warning(f"Invalid handle for object: {group_key}/{obj_name}")
+                    continue
+
+                obj_pose = np.array(initial_state[pose_key])[0]
+                pos = obj_pose[:3]
+                quat_xyzw = obj_pose[3:7]
+
+                quat_wxyz = np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
+
+                tracked_obj.handle.set_world_pose(position=pos, orientation=quat_wxyz)
+                tracked_obj.handle.set_linear_velocity(np.zeros(3))
+                tracked_obj.handle.set_angular_velocity(np.zeros(3))
+
+                Logger.info(f"Restored state for object: {group_key}/{obj_name} at position {pos}")
 
     def _load_action_data(self, data_group: h5py.Group) -> None:
         """Load action data for current demo.
