@@ -5,19 +5,27 @@
 ![teaser.png](./docs/image/Teaser.png)
 
 <div align="center">
+  <a href="https://arxiv.org/abs/2509.14687">
+    <img src="https://img.shields.io/badge/arXiv-2509.14687-b31b1b.svg?style=flat-square" alt="arXiv">
+  </a>
   <a href="https://terminators2025.github.io/RealMirror.github.io/">
-    <img src="https://img.shields.io/badge/github.io-grey?logo=GitHub" alt="GitHub">
+    <img src="https://img.shields.io/badge/Project-Github-blue.svg?style=flat-square&logo=googlechrome&logoColor=white" alt="Github Page">
   </a>
   <a href="https://zread.ai/terminators2025/RealMirror">
-    <img src="https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTYgMTAuMzk5OVoiIGZpbGw9IiNmZmYiLz4KPHBhdGggZD0iTTEzLjc1ODQgMS42MDAxSDExLjAzODRDMTEuNjg1IDEuNjAwMSAxMC4zOTg0IDEuODg2NjQgMTAuMzk4NCAyLjI0MDFWNC45NjAxQzEwLjM5ODQgNS4zMTM1NiAxMC42ODUgNS42MDAxIDExLjAzODQgNS42MDAxSDEzLjc1ODRDMTQuMTExOSA1LjYwMDEgMTQuMzk4NCA1LjMxMzU2IDE0LjM5ODQgNC45NjAxVjIuMjQwMUMxNC4zOTg0IDEuODg2NjQgMTQuMTExOSAxLjYwMDEgMTMuNzU4NCAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDRMNCAxMloiIGZpbGw9IiNmZmYiLz4KPHBhdGggZD0iTTQgMTJMMTIgNCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8%2BCjwvc3ZnPgo%3D&logoColor=ffffff" alt="Ask Zread">
+    <img src="https://img.shields.io/badge/Chat-Zread-00b0aa?style=flat-square&logo=codeforces&logoColor=white" alt="Ask Zread">
   </a>
 </div>
 
 # 🎉News
+
+<h3 align="center">🏆 Congratulations! RealMirror has been accepted to ICRA 2026! ✨</h3>
+
+---
+
 - **[coming soon]** [MirrorLimb](https://arxiv.org/abs/2511.08865) support is coming soon, with the addition of gesture teleoperation functionality. Now you can use PICO to perform more precise and stable control of the robot！
 - **[2025-10-30]** We have released a teleoperation/data acquisition framework and toolchain related to RealMirror.
 - **[2025-10-15]** We have released the RealMirror related evaluation framework, official model weights, and robot/scene assets. 
-- **[2025-09-15]** Excited to release the **Realmirror** paper! Check it out: [Paper](https://arxiv.org/abs/2509.14687).
+- **[2025-09-15]** Excited to release the **RealMirror** paper! Check it out: [Paper](https://arxiv.org/abs/2509.14687).
 
 # *Opensource Plan
 **Before October 15, 2025**
@@ -509,7 +517,7 @@ If you find this work helpful in your research, please consider giving this repo
 ```bibtex
 @article{tai2025realmirror,
   title={RealMirror: A Comprehensive, Open-Source Vision-Language-Action Platform for Embodied AI},
-  author={*},
+  author={Tai, Cong and Zheng, Zhaoyu and Long, Haixu and Wu, Hansheng and Xiang, Haodong and Long, Zhengbin and Xiong, Jun and Shi, Rong and Zhang, Shizhuang and Qiu, Gang and others},
   journal={arXiv preprint arXiv:2509.14687},
   year={2025}
 }
