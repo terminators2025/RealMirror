@@ -128,8 +128,8 @@
                 {
                     "name": "blue",
                     "description": "Pick up the blue can on the left and place it in the middle, then pick up the blue can on the right and place it on top of the can in the middle",
-                    "cylinder_prim_path": "/scene/_02_master_chef_can",
-                    "target_prim_path": "/scene/_02_master_chef_can_01"
+                    "cylinder_prim_path": "/scene/_02_master_chef_can_01",
+                    "target_prim_path": "/scene/_02_master_chef_can"
                 },
                 {
                     "name": "red",
