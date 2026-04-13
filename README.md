@@ -34,6 +34,7 @@
  - [ ] Seed2Scale example assets
  - [ ] Seed2Scale example datasets
  - [ ] Datasets visual physics playback tools
+       
 **Before October 15, 2025**
  - [x] Inference code
  - [x] Evaluation code
