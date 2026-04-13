@@ -23,7 +23,7 @@
 ---
 - **[2026-04-13]** Please check our latest homepage about Seed2Scale！[Seed2Scale Homepage](https://terminators2025.github.io/Seed2Scale.github.io/)
 - **[2026-03-09]** We have launched an automatic large-scale upper limb trajectory generation scheme based on the RealMirror platform **Seed2Scale**, which provides a mode based generation paradigm with SOTA performance. Please refer to our paper for details！Check it out: [Paper](https://arxiv.org/abs/2603.08260).
-- **[coming soon]** [MirrorLimb](https://arxiv.org/abs/2511.08865) support is coming soon, with the addition of gesture teleoperation functionality. Now you can use PICO to perform more precise and stable control of the robot！
+- **[2025-11-12]** [MirrorLimb](https://arxiv.org/abs/2511.08865) with the addition of gesture teleoperation functionality. you can use PICO to perform more precise and stable control of the robot！
 - **[2025-10-30]** We have released a teleoperation/data acquisition framework and toolchain related to RealMirror.
 - **[2025-10-15]** We have released the RealMirror related evaluation framework, official model weights, and robot/scene assets. 
 - **[2025-09-15]** Excited to release the **RealMirror** paper! Check it out: [Paper](https://arxiv.org/abs/2509.14687).
