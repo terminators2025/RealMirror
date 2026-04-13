@@ -21,7 +21,7 @@
 <h3 align="center">🏆 Congratulations! RealMirror has been accepted to ICRA 2026! ✨</h3>
 
 ---
-- **[2026-04-14]** We are about to provide a sample dataset for trajectory automatic generation based on Seed2Scale scheme, as well as corresponding visual physics playback tools and quantitative evaluation results to help users quickly understand the powerful performance and accuracy of our scheme.
+- **[coming soon]** We are about to provide a sample dataset for trajectory automatic generation based on Seed2Scale scheme, as well as corresponding visual physics playback tools and quantitative evaluation results to help users quickly understand the powerful performance and accuracy of our scheme.
 - **[2026-04-13]** Please check our latest homepage about Seed2Scale！[Seed2Scale Homepage](https://terminators2025.github.io/Seed2Scale.github.io/)
 - **[2026-03-09]** We have launched an automatic large-scale upper limb trajectory generation scheme based on the RealMirror platform **Seed2Scale**, which provides a mode based generation paradigm with SOTA performance. Please refer to our paper for details！Check it out: [Paper](https://arxiv.org/abs/2603.08260).
 - **[2025-11-12]** [MirrorLimb](https://arxiv.org/abs/2511.08865) with the addition of gesture teleoperation functionality. you can use PICO to perform more precise and stable control of the robot！
