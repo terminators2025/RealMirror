@@ -30,7 +30,7 @@
 - **[2025-09-15]** Excited to release the **RealMirror** paper! Check it out: [Paper](https://arxiv.org/abs/2509.14687).
 
 # *Opensource Plan
-**Before April  20, 2026**
+**Before April  25, 2026**
  - [ ] Seed2Scale example assets
  - [ ] Seed2Scale example datasets
  - [ ] Datasets visual physics playback tools
