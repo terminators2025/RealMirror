@@ -4,17 +4,6 @@ Download `realmirror_hand_tracking.apk` from the release page:
 
 👉 **[https://github.com/terminators2025/RealMirror-hand-tracking-application](https://github.com/terminators2025/RealMirror-hand-tracking-application)**
 
-Sideload and install it onto your PICO headset. Once installed, you can find the app on the PICO desktop as shown below:
-
-<p align="center">
-  <img src="image/handtrack.png" alt="Hand Tracking App on PICO Desktop" style="width: 60%;">
-</p>
-
-After launching the app, raise both hands — you should see a virtual skeletal overlay in the VR view, as shown below:
-
-<p align="center">
-  <img src="image/desktop.jpeg" alt="Hand Tracking APK Screenshot" style="width: 60%;">
-</p>
 
 <p align="center">
   <img src="image/HandTrackShow.gif" alt="Hand Tracking Demo" style="width: 75%;">
@@ -33,6 +22,17 @@ Write your machine's IP address into this file. The UDP port is fixed at `8090`.
 ## 3. Launch the APK
 
 Open the **hand_tracking** app on the headset. On successful start, raise both hands to confirm the skeletal overlay is visible.
+Sideload and install it onto your PICO headset. Once installed, you can find the app on the PICO desktop as shown below:
+
+<p align="center">
+  <img src="image/handtrack.png" alt="Hand Tracking App on PICO Desktop" style="width: 60%;">
+</p>
+
+After launching the app, raise both hands — you should see a virtual skeletal overlay in the VR view, as shown below:
+
+<p align="center">
+  <img src="image/desktop.jpeg" alt="Hand Tracking APK Screenshot" style="width: 60%;">
+</p>
 
 ## 4. (Optional) Verify the Data Pipeline
 
