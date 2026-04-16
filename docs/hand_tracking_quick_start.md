@@ -19,6 +19,7 @@ After launching the app, raise both hands — you should see a virtual skeletal 
 <p align="center">
   <img src="image/HandTrackShow.gif" alt="Hand Tracking Demo" style="width: 75%;">
 </p>
+
 ## 2. Configure the Server IP
 
 On the headset, create (do **not** modify an existing file — create a new one) the server config file at:
