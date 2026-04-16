@@ -24,7 +24,7 @@
 - **[coming soon]** We are about to provide a sample dataset for trajectory automatic generation based on Seed2Scale scheme, as well as corresponding visual physics playback tools and quantitative evaluation results to help users quickly understand the powerful performance and accuracy of our scheme. Check it out: [Example Project](https://github.com/terminators2025/Seed2Scale-Example)
 - **[2026-04-13]** Please check our latest homepage about Seed2Scale！[Seed2Scale Homepage](https://terminators2025.github.io/Seed2Scale.github.io/)
 - **[2026-03-09]** We have launched an automatic large-scale upper limb trajectory generation scheme based on the RealMirror platform **Seed2Scale**, which provides a mode based generation paradigm with SOTA performance. Please refer to our paper for details！Check it out: [Paper](https://arxiv.org/abs/2603.08260).
-- **[2025-11-12]** [MirrorLimb](https://arxiv.org/abs/2511.08865) with the addition of gesture teleoperation functionality. you can use PICO to perform more precise and stable control of the robot！
+- **[2025-11-12]** [MirrorLimb](https://arxiv.org/abs/2511.08865) with the addition of gesture teleoperation functionality. you can use PICO to perform more precise and stable control of the robot！Check it out: [Feature Introduction](https://github.com/terminators2025/RealMirror/blob/main/docs/hand_tracking_quick_start.md).
 - **[2025-10-30]** We have released a teleoperation/data acquisition framework and toolchain related to RealMirror.
 - **[2025-10-15]** We have released the RealMirror related evaluation framework, official model weights, and robot/scene assets. 
 - **[2025-09-15]** Excited to release the **RealMirror** paper! Check it out: [Paper](https://arxiv.org/abs/2509.14687).
@@ -34,6 +34,7 @@
  - [ ] Seed2Scale example assets
  - [ ] Seed2Scale example datasets
  - [ ] Datasets visual physics playback tools
+ - [x] MirrorLimb hand tracking feature
        
 **Before October 15, 2025**
  - [x] Inference code
