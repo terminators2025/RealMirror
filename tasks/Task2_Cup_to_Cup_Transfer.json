@@ -137,7 +137,7 @@
                 "/scene/cup_01/tmp7ih5sl_a_ply/tmp7ih5sl_a_ply"
             ],
             "scene_id": "taks_2",
-            "scene_usd": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task2_Cup_to_Cup_Transfer/KitchenRoom_RSS.usd",
+            "scene_usd": "/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task2_Cup_to_Cup_Transfer/KitchenRoom_RSS.usd",
             "prime_path": "/scene",
             "camera_configs": {
                 "head_camera": {
@@ -177,7 +177,7 @@
             },
             "eval_cfg": {
                 "model": {
-                    "model_root_dir": "/mnt/data/lzb/data/RealMirror_Benchmark_data/models",
+                    "model_root_dir": "/data/lzb/data/RealMirror_Benchmark_data/models",
                     "checkpoints_dir": {
                         "ACT": "ACT",
                         "Diffusion": "Diffusion",

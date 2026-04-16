@@ -14,6 +14,26 @@
 #    under the License.
 from .base_controller import BaseController
 from .pico_controller import PicoController
-from .control_mapping import ControlMapping, A2PicoMapping
+from .control_mapping import ControlMapping, A2PicoMapping, A2HandTrackMapping
 
-__all__ = ["BaseController", "PicoController", "ControlMapping", "A2PicoMapping"]
+# HandTrackController is intentionally NOT imported at the top level to avoid
+# forcing a scipy dependency when only PicoController is needed.  Import it
+# directly: ``from controllers.hand_track_controller import HandTrackController``
+
+__all__ = [
+    "BaseController",
+    "PicoController",
+    "ControlMapping",
+    "A2PicoMapping",
+    "A2HandTrackMapping",
+    "HandTrackController",
+]
+
+
+def __getattr__(name: str):
+    """Lazy import for HandTrackController."""
+    if name == "HandTrackController":
+        from .hand_track_controller import HandTrackController
+
+        return HandTrackController
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

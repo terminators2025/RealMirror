@@ -80,7 +80,7 @@
                 "/scene/new_yellowtea/Mesh0"
             ],
             "scene_id": "taks_1",
-            "scene_usd": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task1_Kitchen_Cleanup/kitchen.usd",
+            "scene_usd": "/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task1_Kitchen_Cleanup/kitchen.usd",
             "prime_path": "/scene",
             "camera_configs": {
                 "head_camera": {
@@ -120,7 +120,7 @@
             },
             "eval_cfg": {
                 "model": {
-                    "model_root_dir": "/mnt/data/lzb/data/RealMirror_Benchmark_data/models",
+                    "model_root_dir": "/data/lzb/data/RealMirror_Benchmark_data/models",
                     "checkpoints_dir": {
                         "ACT": "ACT",
                         "Diffusion": "Diffusion",

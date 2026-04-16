@@ -1,11 +1,11 @@
 {
     "name": "a2_robot",
-    "usd_path": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/model_no_col2.usd",
-    "urdf_path": "/mnt/data/lzb/real_mirror_data/A2_t2d0_flagship/urdf/raise_a2_t2d0_flagship/model_no_col.urdf",
+    "usd_path": "/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/model_no_col2.usd",
+    "urdf_path": "/data/lzb/data/RealMirror_Benchmark_data/raise_a2_t2d0_flagship/model_no_col.urdf",
     "prim_path": "/World/A2",
     "robot_descriptor_paths": {
-        "right": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/arm_descriptor/a2_right_arm_robot_descriptor.yaml",
-        "left": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/arm_descriptor/a2_left_arm_robot_descriptor.yaml"
+        "right": "/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/arm_descriptor/a2_right_arm_robot_descriptor.yaml",
+        "left": "/data/lzb/data/RealMirror_Benchmark_data/assets/robot/AgiBotA2/arm_descriptor/a2_left_arm_robot_descriptor.yaml"
     },
     "arm_joints": {
         "left": [
@@ -202,5 +202,5 @@
         "L_thumb_swing_joint_deg": 90.0,
         "R_thumb_swing_joint_deg": 90.0
     }
-   
+
 }

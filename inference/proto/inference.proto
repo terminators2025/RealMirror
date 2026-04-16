@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package inference;
+
+// 定义图片数据，使用 Repeated float 来表示 HxWxC 展平后的数据
+// 在实际传输时，图片会展平为一维数组，然后在服务端和客户端进行 reshape
+message ImageData {
+  repeated float data = 1;
+  int32 height = 2;
+  int32 width = 3;
+  int32 channels = 4;
+}
+
+// 定义推理请求消息
+message InferenceRequest {
+  string episode_id = 1; // 新增 episode_id 字段
+  repeated float state = 2; // 状态向量
+  ImageData head_camera = 3;
+  ImageData left_wrist_camera = 4;
+  ImageData right_wrist_camera = 5;
+  string task = 6;
+}
+
+// 定义推理响应消息
+message InferenceResponse {
+  string request_id = 1;
+  repeated float prediction = 2; // 模型输出的动作向量
+  string episode_id = 3; // 响应中也带上 episode_id
+}
+
+// 定义推理服务
+service InferenceService {
+  rpc Predict (InferenceRequest) returns (InferenceResponse);
+}

@@ -16,17 +16,12 @@ import numpy as np
 import yaml
 import json
 import os
-from typing import Dict, List, Optional, Tuple, Any, Union
-import carb
+from typing import Dict, List, Optional, Tuple, Union
 from scipy.spatial.transform import Rotation as R
-from omni.isaac.core.utils.prims import get_prim_at_path
-from pxr import Usd, UsdGeom, Gf
 from utility.logger import Logger
 
 
-
 class CommonUtils:
-    
 
     @staticmethod
     def load_yaml_config(file_path: str) -> Optional[Dict]:
@@ -84,7 +79,6 @@ class CommonUtils:
 
 
 class TransformUtils:
-    
 
     @staticmethod
     def quat_wxyz_to_xyzw(quat_wxyz: np.ndarray) -> np.ndarray:
@@ -95,17 +89,13 @@ class TransformUtils:
         return np.array([quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]])
 
     @staticmethod
-    def euler_to_quat(
-        euler_angles: np.ndarray, sequence: str = "xyz", degrees: bool = True
-    ) -> np.ndarray:
+    def euler_to_quat(euler_angles: np.ndarray, sequence: str = "xyz", degrees: bool = True) -> np.ndarray:
         r = R.from_euler(sequence, euler_angles, degrees=degrees)
         quat_xyzw = r.as_quat()
         return TransformUtils.quat_xyzw_to_wxyz(quat_xyzw)
 
     @staticmethod
-    def quat_to_euler(
-        quat_wxyz: np.ndarray, sequence: str = "xyz", degrees: bool = True
-    ) -> np.ndarray:
+    def quat_to_euler(quat_wxyz: np.ndarray, sequence: str = "xyz", degrees: bool = True) -> np.ndarray:
         quat_xyzw = TransformUtils.quat_wxyz_to_xyzw(quat_wxyz)
         r = R.from_quat(quat_xyzw)
         return r.as_euler(sequence, degrees=degrees)
@@ -128,18 +118,14 @@ class TransformUtils:
         return position, quat_wxyz
 
     @staticmethod
-    def multiply_transforms(
-        pose1: Tuple[np.ndarray, np.ndarray], pose2: Tuple[np.ndarray, np.ndarray]
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def multiply_transforms(pose1: Tuple[np.ndarray, np.ndarray], pose2: Tuple[np.ndarray, np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
         mat1 = TransformUtils.pose_to_matrix(pose1[0], pose1[1])
         mat2 = TransformUtils.pose_to_matrix(pose2[0], pose2[1])
         result_mat = mat1 @ mat2
         return TransformUtils.matrix_to_pose(result_mat)
 
     @staticmethod
-    def inverse_transform(
-        position: np.ndarray, orientation: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def inverse_transform(position: np.ndarray, orientation: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
         mat = TransformUtils.pose_to_matrix(position, orientation)
         inv_mat = np.linalg.inv(mat)
@@ -147,20 +133,17 @@ class TransformUtils:
 
 
 class MathUtils:
-    
 
     @staticmethod
     def normalize_vector(vector: np.ndarray) -> np.ndarray:
- 
+
         norm = np.linalg.norm(vector)
         if norm < 1e-10:
             return np.zeros_like(vector)
         return vector / norm
 
     @staticmethod
-    def angle_between_vectors(
-        v1: np.ndarray, v2: np.ndarray, degrees: bool = False
-    ) -> float:
+    def angle_between_vectors(v1: np.ndarray, v2: np.ndarray, degrees: bool = False) -> float:
 
         v1_norm = MathUtils.normalize_vector(v1)
         v2_norm = MathUtils.normalize_vector(v2)
@@ -184,10 +167,8 @@ class MathUtils:
         return angle
 
     @staticmethod
-    def lerp(
-        start: Union[float, np.ndarray], end: Union[float, np.ndarray], t: float
-    ) -> Union[float, np.ndarray]:
- 
+    def lerp(start: Union[float, np.ndarray], end: Union[float, np.ndarray], t: float) -> Union[float, np.ndarray]:
+
         t = np.clip(t, 0.0, 1.0)
         return start + (end - start) * t
 
@@ -201,11 +182,7 @@ class MathUtils:
         r2 = R.from_quat(q2_xyzw)
 
         slerp_obj = R.from_quat([q1_xyzw, q2_xyzw])
-        result = (
-            slerp_obj[0]
-            if t <= 0
-            else (slerp_obj[1] if t >= 1 else R.slerp([0, 1], [r1, r2])(t))
-        )
+        result = slerp_obj[0] if t <= 0 else (slerp_obj[1] if t >= 1 else R.slerp([0, 1], [r1, r2])(t))
 
         result_xyzw = result.as_quat()
         return TransformUtils.quat_xyzw_to_wxyz(result_xyzw)
@@ -220,89 +197,10 @@ class MathUtils:
         return np.convolve(data, weights, mode="same")
 
 
-class PrimUtils:
-    
-
-    @staticmethod
-    def is_prim_valid(prim_path: str) -> bool:
-      
-        prim = get_prim_at_path(prim_path)
-        return prim is not None and prim.IsValid()
-
-    @staticmethod
-    def get_prim_children(prim_path: str) -> List[str]:
-
-        prim = get_prim_at_path(prim_path)
-        if not prim or not prim.IsValid():
-            return []
-
-        children = []
-        for child in prim.GetChildren():
-            children.append(str(child.GetPath()))
-        return children
-
-    @staticmethod
-    def find_prims_by_type(root_path: str, prim_type: str) -> List[str]:
-        result = []
-
-        def _recursive_search(prim_path: str):
-            prim = get_prim_at_path(prim_path)
-            if not prim or not prim.IsValid():
-                return
-
-            if prim.GetTypeName() == prim_type:
-                result.append(prim_path)
-
-            for child in prim.GetChildren():
-                _recursive_search(str(child.GetPath()))
-
-        _recursive_search(root_path)
-        return result
-
-    @staticmethod
-    def get_prim_attribute(prim_path: str, attr_name: str) -> Any:
-        prim = get_prim_at_path(prim_path)
-        if not prim or not prim.IsValid():
-            return None
-
-        attr = prim.GetAttribute(attr_name)
-        if attr and attr.IsValid():
-            return attr.Get()
-        return None
-
-    @staticmethod
-    def set_prim_attribute(prim_path: str, attr_name: str, value: Any) -> bool:
-        prim = get_prim_at_path(prim_path)
-        if not prim or not prim.IsValid():
-            return False
-
-        attr = prim.GetAttribute(attr_name)
-        if attr and attr.IsValid():
-            attr.Set(value)
-            return True
-        return False
-
-    @staticmethod
-    def get_prim_world_transform(
-        prim_path: str,
-    ) -> Optional[Tuple[np.ndarray, np.ndarray]]:
-        try:
-            from omni.isaac.core.utils.xforms import get_world_pose
-
-            pos, quat = get_world_pose(prim_path)
-            return pos, quat
-        except Exception as e:
-            Logger.error(f"Failed to get world transform for {prim_path}: {e}")
-            return None
-
-
 class FilterUtils:
-    
 
     @staticmethod
-    def low_pass_filter(
-        data: np.ndarray, cutoff_freq: float, sample_rate: float
-    ) -> np.ndarray:
+    def low_pass_filter(data: np.ndarray, cutoff_freq: float, sample_rate: float) -> np.ndarray:
         from scipy import signal
 
         nyquist = sample_rate / 2
@@ -342,12 +240,9 @@ class FilterUtils:
 
 
 class ValidationUtils:
-    
 
     @staticmethod
-    def validate_joint_limits(
-        joint_positions: np.ndarray, joint_limits: List[Tuple[float, float]]
-    ) -> np.ndarray:
+    def validate_joint_limits(joint_positions: np.ndarray, joint_limits: List[Tuple[float, float]]) -> np.ndarray:
         validated = np.copy(joint_positions)
         for i, (min_val, max_val) in enumerate(joint_limits):
             if i < len(validated):
@@ -355,18 +250,14 @@ class ValidationUtils:
         return validated
 
     @staticmethod
-    def check_collision_free(
-        position: np.ndarray, obstacles: List[Tuple[np.ndarray, float]]
-    ) -> bool:
+    def check_collision_free(position: np.ndarray, obstacles: List[Tuple[np.ndarray, float]]) -> bool:
         for center, radius in obstacles:
             if np.linalg.norm(position - center) < radius:
                 return False
         return True
 
     @staticmethod
-    def is_pose_reachable(
-        target_pos: np.ndarray, workspace_center: np.ndarray, workspace_radius: float
-    ) -> bool:
+    def is_pose_reachable(target_pos: np.ndarray, workspace_center: np.ndarray, workspace_radius: float) -> bool:
         return np.linalg.norm(target_pos - workspace_center) <= workspace_radius
 
 
@@ -385,6 +276,3 @@ matrix_to_pose = TransformUtils.matrix_to_pose
 normalize = MathUtils.normalize_vector
 lerp = MathUtils.lerp
 slerp = MathUtils.slerp
-
-is_prim_valid = PrimUtils.is_prim_valid
-get_prim_children = PrimUtils.get_prim_children

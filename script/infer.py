@@ -12,7 +12,9 @@ parser.add_argument(
     choices=["act", "diffusion", "smolvla"],
     help="Type of model to use",
 )
-parser.add_argument("--model-path", type=str, required=True, help="Path to pretrained model")
+parser.add_argument(
+    "--model-path", type=str, default="", help="Path to pretrained model (not required when using --use-grpc)"
+)
 parser.add_argument("--headless", action="store_true", help="Run in headless mode without GUI")
 parser.add_argument(
     "--arc2gear",
@@ -40,7 +42,30 @@ parser.add_argument(
     help="UI resolution (e.g., 1920x1080, 1280x720)",
 )
 
+# gRPC remote inference options
+parser.add_argument(
+    "--use-grpc",
+    action="store_true",
+    help="Use gRPC remote inference instead of local inference",
+)
+parser.add_argument(
+    "--grpc-server",
+    type=str,
+    default="localhost:50055",
+    help="gRPC server address (host:port)",
+)
+parser.add_argument(
+    "--grpc-timeout",
+    type=float,
+    default=300.0,
+    help="gRPC request timeout in seconds",
+)
+
 args = parser.parse_args()
+
+# Validate arguments
+if not args.use_grpc and not args.model_path:
+    parser.error("--model-path is required when not using --use-grpc")
 
 width, height = map(int, args.resolution.split("x"))
 
@@ -67,7 +92,7 @@ from comm_config.simulation_config import SimulationConfig
 from comm_config.camera_config import CameraConfig
 from robots.robot_factory import RobotFactory
 from simulation.scene_manager import SceneManager
-from inference import UnitConverter, ModelLoader, InferenceEngine, InferenceConfig
+from inference import UnitConverter, ModelLoader, InferenceEngine, InferenceConfig, RemoteInferenceEngine
 from utility.logger import Logger
 from utility.camera_utils import get_camera_image
 import utility.system_utils as system_utils
@@ -242,33 +267,59 @@ class InferenceRunner:
         # Create inference configuration
         self.inference_config = InferenceConfig(
             model_type=self.args.model_type,
-            model_path=self.args.model_path,
+            model_path=self.args.model_path if not self.args.use_grpc else "",
             use_gear_conversion=self.args.arc2gear,
             num_actions_in_chunk=self.args.num_actions,
             task_name=self.args.task_name,
+            use_grpc=self.args.use_grpc,
+            grpc_server_address=self.args.grpc_server,
+            grpc_timeout=self.args.grpc_timeout,
         )
 
-        # Initialize components
+        # Initialize unit converter
         self.unit_converter = UnitConverter(
             arc_to_gear=self.inference_config.use_gear_conversion,
             max_gear=self.inference_config.max_gear,
         )
 
-        self.model_loader = ModelLoader(
-            model_type=self.inference_config.model_type,
-            model_path=self.inference_config.model_path,
-        )
+        # Choose inference mode based on configuration
+        if self.inference_config.use_grpc:
+            Logger.info(f"Using gRPC remote inference: {self.inference_config.grpc_server_address}")
 
-        # Load model
-        if not self.model_loader.load_model():
-            raise RuntimeError("Failed to load inference model")
+            # Setup remote inference engine
+            self.inference_engine = RemoteInferenceEngine(
+                server_address=self.inference_config.grpc_server_address,
+                unit_converter=self.unit_converter,
+                num_actions_in_chunk=self.inference_config.num_actions_in_chunk,
+                timeout=self.inference_config.grpc_timeout,
+            )
 
-        self.inference_engine = InferenceEngine(
-            model_loader=self.model_loader,
-            unit_converter=self.unit_converter,
-            num_actions_in_chunk=self.inference_config.num_actions_in_chunk,
-            image_resolution=self.inference_config.image_resolution,
-        )
+            # Connect to remote server
+            if not self.inference_engine.connect():
+                raise RuntimeError(
+                    f"Failed to connect to gRPC inference server at {self.inference_config.grpc_server_address}"
+                )
+
+            Logger.info("Connected to gRPC inference server")
+        else:
+            Logger.info("Using local inference")
+
+            # Setup local inference engine
+            self.model_loader = ModelLoader(
+                model_type=self.inference_config.model_type,
+                model_path=self.inference_config.model_path,
+            )
+
+            # Load model
+            if not self.model_loader.load_model():
+                raise RuntimeError("Failed to load inference model")
+
+            self.inference_engine = InferenceEngine(
+                model_loader=self.model_loader,
+                unit_converter=self.unit_converter,
+                num_actions_in_chunk=self.inference_config.num_actions_in_chunk,
+                image_resolution=self.inference_config.image_resolution,
+            )
 
         # Set task name if provided
         if self.inference_config.task_name:
@@ -458,8 +509,17 @@ class InferenceRunner:
             Logger.info(f"Reached maximum steps: {self.args.max_steps}")
 
     def shutdown(self):
-        """Clean shutdown."""
+        """Cleanup and shutdown."""
         Logger.info("Shutting down...")
+
+        # Disconnect from gRPC server if using remote inference
+        if hasattr(self, "inference_config") and self.inference_config.use_grpc:
+            if hasattr(self, "inference_engine"):
+                try:
+                    self.inference_engine.disconnect()
+                    Logger.info("Disconnected from gRPC server")
+                except Exception as e:
+                    Logger.warning(f"Error disconnecting from gRPC server: {e}")
 
         if self.keyboard_sub:
             try:

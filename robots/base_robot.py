@@ -19,7 +19,7 @@ import numpy as np
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.types import ArticulationAction
-from enum import Enum
+
 
 class BaseRobot(ABC):
 
@@ -27,11 +27,11 @@ class BaseRobot(ABC):
         self.config = config
         self.robot_ref: Optional[Robot] = None
         self.robot_view: Optional[ArticulationView] = None
-        self.gripper_states = {"left": None, "right": None}
+        self.gripper_states: Dict[str, Optional[int]] = {"left": None, "right": None}
         self.is_initialized = False
 
     @abstractmethod
-    def initialize(self, world, simulation_app, mode: str):
+    def initialize(self, world, simulation_app, mode: str, env_index: int = 0):
         pass
 
     @abstractmethod
@@ -57,18 +57,16 @@ class BaseRobot(ABC):
     @abstractmethod
     def get_end_effector_link_path(self, arm: str) -> str:
         """Get the end effector link path for the specified arm.
-        
+
         Args:
             arm: Arm identifier ("left" or "right").
-            
+
         Returns:
             Full prim path to the end effector link.
         """
         pass
 
-    def apply_joint_positions(
-        self, joint_positions: np.ndarray, joint_indices: List[int]
-    ):
+    def apply_joint_positions(self, joint_positions: np.ndarray, joint_indices: List[int]):
 
         if self.robot_ref and self.robot_ref.is_valid():
             action = ArticulationAction(

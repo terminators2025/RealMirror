@@ -77,12 +77,12 @@ class CameraConfig:
         """
         cameras = {}
         if "scene" not in task_config or not task_config["scene"]:
-            raise ValueError(f'No cameras config in task_config')
+            raise ValueError('No cameras config in task_config')
 
         # The scene is a list, we process the camera configs from the first scene entry
         scene_config = task_config["scene"][0]
         if "camera_configs" not in scene_config:
-            raise ValueError(f'No as config in task_config')
+            raise ValueError('No camera_configs in task_config')
 
         camera_definitions = scene_config["camera_configs"]
         scene_prim_path = scene_config.get("prime_path", "/scene")
@@ -123,3 +123,4 @@ class CameraConfig:
                 Logger.error(f"Failed to create camera '{cam_name}': {e}")
 
         return cameras
+    

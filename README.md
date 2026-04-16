@@ -315,23 +315,36 @@ isaacsim_py script/eval.py --task Task5_Air_Fryer_Manipulation --model-type smol
 
 ### 2.5  Teleoperation
 
-#### 2.5.1 Start XR-Linker
-See <a href="docs/xr_linker_quik_start.md">xr_linker_quik_start.md</a> for instructions on how to use XR-Linker to connect 
-pico and control.
+RealMirror supports two teleoperation modes. Choose based on your use case:
 
-#### 2.5.2 🚀 Launch Simulation Environment
-- **Basic control parameters**
+| Mode | Controller | Prerequisites |
+|------|-----------|---------------|
+| **Pico VR Controller** | 6-DoF handheld controllers | XR-Linker running |
+| **Hand Tracking** | Bare-hand gesture tracking | RealMirror APK installed on headset |
 
-|    ⚙️ Parameter  |                        📜 Description                         |
-| :----------: | :----------------------------------------------------------: |
-|  `--task`  | Name of the task configuration file in the 'tasks' directory (e.g., 'Task_1_Kitchen_Cleanup'). |
-| `--output-dir` |        Set data recording output directory.         |
-|   `--disable_recorder`    |                  Disable **data recording**.                  |
-|--hide_ik_targets| If set, the visual target cubes for IK teleoperation will be hidden
+#### 2.5.1 Pico VR Controller
 
-Assuming Task1_Kitchen_Cleanup in simulation with recording:
+**Step 1 — Start XR-Linker**
+
+See <a href="docs/xr_linker_quik_start.md">xr_linker_quik_start.md</a> for instructions on how to use XR-Linker to connect PICO and control.
+
+**Step 2 — Launch simulation**
+
 ```bash
 $isaac_sim_dir/python.sh script/teleop.py --hide_ik_targets --task Task1_Kitchen_Cleanup --output-dir /data/record
+```
+
+#### 2.5.2 Hand Tracking (Gesture-based Teleoperation)
+
+No XR-Linker needed. The headset streams 26-DOF hand joint data directly to RealMirror over UDP.
+
+See <a href="docs/hand_tracking_quick_start.md">hand_tracking_quick_start.md</a> for the full setup guide, including APK installation, IP configuration, data pipeline verification, and all teleoperation parameters.
+
+**Quick start:**
+
+```bash
+$isaac_sim_dir/python.sh script/teleop.py --task Task1_Kitchen_Cleanup --output-dir /data/record \
+    --controller-type hand_track --udp-port 8090 --wrist-method rotvec
 ```
 
 #### 2.5.3 Replay and Verify Recorded Data

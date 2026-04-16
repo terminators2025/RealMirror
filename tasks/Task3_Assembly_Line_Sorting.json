@@ -86,7 +86,7 @@
                 "/scene/cy_hole_03/mesh______"
             ],
             "scene_id": "taks_3",
-            "scene_usd": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task3_Assembly_Line_Sorting/zhiyuan_A2_scene_task_3.usd",
+            "scene_usd": "/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task3_Assembly_Line_Sorting/zhiyuan_A2_scene_task_3.usd",
             "prime_path": "/scene",
             "camera_configs": {
                 "head_camera": {
@@ -126,7 +126,7 @@
             },
             "eval_cfg": {
                 "model": {
-                    "model_root_dir": "/mnt/data/lzb/data/RealMirror_Benchmark_data/models",
+                    "model_root_dir": "/data/lzb/data/RealMirror_Benchmark_data/models",
                     "checkpoints_dir": {
                         "ACT": "ACT",
                         "Diffusion": "Diffusion",

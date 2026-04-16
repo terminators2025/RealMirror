@@ -1,8 +1,8 @@
 XR Linker Production Release
 ========================================
 
-Release Name: xr_linker_production_20251030_185122
-Release Date: 2025-10-30 18:51:39
+Release Name: xr_linker_production_20260416_114002
+Release Date: 2026-04-16 11:40:08
 Node.js Version: v22.19.0
 
 Package Contents:
@@ -16,8 +16,8 @@ Installation Instructions:
 ========================================
 
 1. Extract the package:
-   tar -xzf xr_linker_production_20251030_185122.tar.gz
-   cd xr_linker_production_20251030_185122
+   tar -xzf xr_linker_production_20260416_114002.tar.gz
+   cd xr_linker_production_20260416_114002
 
 2. Configure environment:
    cp .env.example .env

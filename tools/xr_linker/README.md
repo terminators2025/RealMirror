@@ -30,13 +30,8 @@ cp .env.example .env
 
 ## Requirements
 
-- Node.js >= 14.x(node version == v22.19.0)
+- Node.js >= 14.x
 - HTTPS certificates in `cert/` directory
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-nvm install 22.19.0
-nvm use 22.19.0
-```
 
 ## Note
 

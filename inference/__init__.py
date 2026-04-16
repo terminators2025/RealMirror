@@ -12,13 +12,21 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 from .unit_converter import UnitConverter
 from .model_loader import ModelLoader
 from .inference_engine import InferenceEngine, InferenceConfig
+from .grpc_client import RemoteInferenceEngine, GrpcInferenceClient
+from .temporal_ensembler import TemporalEnsembler
+from .metrics_collector import MetricsCollector
 
 __all__ = [
     "UnitConverter",
-    "ModelLoader", 
+    "ModelLoader",
     "InferenceEngine",
     "InferenceConfig",
+    "RemoteInferenceEngine",
+    "GrpcInferenceClient",
+    "TemporalEnsembler",
+    "MetricsCollector",
 ]

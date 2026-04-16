@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import argparse
 import json
 import time
@@ -51,6 +52,29 @@ parser.add_argument(
     type=str,
     default="1920x1080",
     help="UI resolution (e.g., 1920x1080, 1280x720)",
+)
+parser.add_argument(
+    "--controller-type",
+    choices=["vr_controller", "hand_track"],
+    default="vr_controller",
+    help="Controller type: vr_controller (PICO VR handheld controllers) or hand_track (bare-hand gesture tracking)",
+)
+parser.add_argument(
+    "--hand-data-path",
+    default="live_hand_data.json",
+    help="Path for hand tracking JSON data file",
+)
+parser.add_argument(
+    "--udp-port",
+    type=int,
+    default=8090,
+    help="UDP port for hand tracking data (default: 8090)",
+)
+parser.add_argument(
+    "--wrist-method",
+    choices=["rotvec", "euler"],
+    default="rotvec",
+    help="Wrist orientation mapping method: rotvec (stable, recommended) or euler (original)",
 )
 
 args = parser.parse_args()
@@ -118,8 +142,27 @@ class TeleOp:
         self.scene_manager._adjust_ground_plane()
         self.scene_manager._initialize_object_manager()
         self.scene_manager._diagnose_and_fix_physics()
-        control_mapping = A2PicoMapping(self.sim_config)
-        self.pico_controller = PicoController(args.pico_json_path)
+        if args.controller_type == "hand_track":
+            from controllers.hand_track_controller import HandTrackController
+            from controllers.control_mapping import A2HandTrackMapping
+            from hand_tracking.udp_server import HandTrackUDPServer
+
+            self.udp_server = HandTrackUDPServer(
+                output_path=args.hand_data_path,
+                port=args.udp_port,
+            )
+            self.udp_server.start()
+
+            self.controller = HandTrackController(args.hand_data_path)
+            self.controller.set_wrist_method(args.wrist_method)
+            self.controller.set_udp_server(self.udp_server)
+            control_mapping = A2HandTrackMapping()
+        else:
+            self.udp_server = None
+            self.controller = PicoController(args.pico_json_path)
+            control_mapping = A2PicoMapping(self.sim_config)
+
+        self.pico_controller = self.controller
         ik_solver = IKSolver(self.robot, self.robot_config)
         ik_solver.initialize()
 
@@ -132,9 +175,8 @@ class TeleOp:
             right_hand_joints=self.robot_config.hand_joints["right"],
         )
 
-        self.teleop_manager = TeleopManager(
-            self.robot, control_mapping, ik_solver, self.sim_config, self.slow_homing_manager
-        )
+        self.teleop_manager = TeleopManager(self.robot, control_mapping, ik_solver, self.sim_config, self.slow_homing_manager)
+        self.teleop_manager.controller = self.controller
         self.slow_homing_manager.teleop_manager = self.teleop_manager
         self.teleop_manager.initialize_target_cubes(self.world, args.hide_ik_targets)
 
@@ -154,7 +196,7 @@ class TeleOp:
                 task_name=args.task,
             )
             self.recorder.setup()
-            self.visualizer = DataCollectionVisualizer()
+            self.visualizer = DataCollectionVisualizer(sim_app=simulation_app)
         self._setup_keyboard_callbacks()
 
     def _try_load_task_robot_gripper_config(self):
@@ -232,6 +274,30 @@ class TeleOp:
         if event.input in self.object_selection_key_map:
             self.object_selection_key_map[event.input]()
             return True
+
+        if event.input == carb.input.KeyboardInput.C:
+            if hasattr(self, 'teleop_manager'):
+                self.teleop_manager.reset_hand_track_calibration()
+            return True
+
+        # Hand tracking arm toggle: T=right arm, G=left arm, O=reset pose, P=slow homing
+        if self.args.controller_type == "hand_track":
+            if event.input == carb.input.KeyboardInput.T:
+                if hasattr(self, 'teleop_manager'):
+                    self.teleop_manager.toggle_teleop("right")
+                return True
+            if event.input == carb.input.KeyboardInput.G:
+                if hasattr(self, 'teleop_manager'):
+                    self.teleop_manager.toggle_teleop("left")
+                return True
+            if event.input == carb.input.KeyboardInput.O:
+                if hasattr(self, 'teleop_manager'):
+                    self.teleop_manager.reset_robot_pose(self.world)
+                return True
+            if event.input == carb.input.KeyboardInput.P:
+                if hasattr(self, 'slow_homing_manager'):
+                    self.slow_homing_manager.trigger()
+                return True
 
         return True
 
@@ -313,6 +379,9 @@ class TeleOp:
 
     def shutdown(self):
         """Cleans up resources and closes the simulation."""
+        if hasattr(self, 'udp_server') and self.udp_server is not None:
+            self.udp_server.stop()
+
         # 清理可视化窗口
         if self.visualizer:
             self.visualizer.destroy()

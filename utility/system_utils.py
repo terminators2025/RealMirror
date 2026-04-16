@@ -14,5 +14,6 @@
 #    under the License.
 import os
 
+
 def teleop_root_path():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

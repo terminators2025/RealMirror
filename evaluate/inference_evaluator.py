@@ -51,7 +51,7 @@ def object_height_below_minimum(prim_path: str, minimum_height: float) -> bool:
 
 
 def log_object_reached_target_details(
-    name:str, moving_prim_path: str, target_prim_path: str, xy_threshold: float, z_threshold: float
+    name: str, moving_prim_path: str, target_prim_path: str, xy_threshold: float, z_threshold: float
 ) -> None:
     """
     A dedicated logging function that calculates and prints position details of a moving object relative to a target.
@@ -77,9 +77,7 @@ def log_object_reached_target_details(
         Logger.error(f"Failed to log success state details: {e}")
 
 
-def object_reached_target(
-    moving_prim_path: str, target_prim_path: str, xy_threshold: float, z_threshold: float
-) -> bool:
+def object_reached_target(moving_prim_path: str, target_prim_path: str, xy_threshold: float, z_threshold: float) -> bool:
     """
     Checks if an object has reached a position above another object.
     This version only performs the calculation and returns a boolean value, it does not print any information.
@@ -106,13 +104,14 @@ def object_reached_target(
         Logger.error(f"Termination condition check 'object_reached_target' failed: {e}")
         return False
 
+
 def object_is_stably_stacked(
-    moving_prim: RigidPrim, 
-    target_prim: RigidPrim, 
-    xy_threshold: float, 
+    moving_prim: RigidPrim,
+    target_prim: RigidPrim,
+    xy_threshold: float,
     z_threshold: float,
     velocity_threshold: float = 0.2,
-    angular_velocity_threshold: float = 0.15
+    angular_velocity_threshold: float = 0.15,
 ) -> bool:
     """
     Checks if a moving prim is stably stacked on a target prim.
@@ -180,7 +179,7 @@ def log_grasp_state_details(
         # 1. Check distance
         hand_pos, _ = get_world_pose(end_effector_prim_path)
         object_pos, _ = get_world_pose(target_object_prim_path)
-        
+
         distance = np.linalg.norm(hand_pos - object_pos)
         is_close = distance < distance_threshold
         Logger.debug(f"    - Distance: {distance:.4f}m (Threshold: < {distance_threshold}m, Status: {'✓' if is_close else '✗'})")
@@ -197,7 +196,9 @@ def log_grasp_state_details(
 
         gripper_joints_sum = np.sum(joint_positions[0, gripper_joint_indices])
         is_gripping = gripper_joints_sum > gripper_closed_threshold
-        Logger.debug(f"    - Gripper Angle Sum: {gripper_joints_sum:.4f} rad (Threshold: > {gripper_closed_threshold} rad, Status: {'✓' if is_gripping else '✗'})")
+        Logger.debug(
+            f"    - Gripper Angle Sum: {gripper_joints_sum:.4f} rad (Threshold: > {gripper_closed_threshold} rad, Status: {'✓' if is_gripping else '✗'})"
+        )
 
         if is_gripping:
             Logger.info("    - Result: SUCCESS")
@@ -245,7 +246,7 @@ def check_grasp_state(
         # 1. Check distance
         hand_pos, _ = get_world_pose(end_effector_prim_path)
         object_pos, _ = get_world_pose(target_object_prim_path)
-        
+
         distance = np.linalg.norm(hand_pos - object_pos)
         is_close = distance < distance_threshold
 
@@ -261,7 +262,7 @@ def check_grasp_state(
         # Calculate the sum of the specified finger joint angles
         gripper_joints_sum = np.sum(joint_positions[0, gripper_joint_indices])
         is_gripping = gripper_joints_sum > gripper_closed_threshold
-        
+
         # Grasp is considered successful only when both conditions are met
         return is_gripping
 
@@ -274,86 +275,61 @@ def check_grasp_state(
 # Evaluation Helper Functions
 # ==================================
 
+
 def save_frames_to_video(frames: List[np.ndarray], output_path: str, fps: int = 30) -> bool:
     """
     Saves a list of frames as a video file.
-    
+
     Args:
         frames: List of image frames.
         output_path: Output video path.
         fps: Frames per second.
-        
+
     Returns:
         bool: True if saved successfully, otherwise False.
     """
     if not frames:
         Logger.warning("Frame buffer is empty. Cannot save video.")
         return False
-    
+
     try:
         height, width, _ = frames[0].shape
     except (IndexError, ValueError):
         Logger.warning("Frame buffer is empty or has wrong shape. Cannot save video.")
         return False
-    
+
     # Ensure the output directory exists
     output_dir = os.path.dirname(output_path)
     os.makedirs(output_dir, exist_ok=True)
-    
+
     # Create video writer
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # type: ignore
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
     video_writer = cv2.VideoWriter(output_path, fourcc, float(fps), (width, height))
-    
+
     if not video_writer.isOpened():
         Logger.error(f"Failed to open video writer for path: {output_path}")
         return False
-    
+
     Logger.info(f"Saving {len(frames)} frames to video: {output_path}")
-    
+
     # Write all frames
     for frame in frames:
         video_writer.write(frame)
-    
+
     video_writer.release()
     Logger.info(f"Video saved successfully to: {output_path}")
     return True
 
 
-def move_prim_safely(prim: RigidPrim, position: np.ndarray, orientation: np.ndarray) -> None:
-    """
-    Safely moves a RigidPrim to a specified pose.
-    
-    Args:
-        prim: The RigidPrim object to move.
-        position: Target position (x, y, z).
-        orientation: Target orientation quaternion (w, x, y, z).
-    """
-    if not prim or not prim.is_valid():
-        return
-    
-    # Temporarily disable physics
-    prim.disable_rigid_body_physics()
-    
-    # Set the new pose
-    prim.set_world_pose(position=position.tolist(), orientation=orientation.tolist())
-    
-    # Re-enable physics
-    prim.enable_rigid_body_physics()
-    
-    # Reset velocities
-    prim.set_linear_velocity(np.zeros(3))
-    prim.set_angular_velocity(np.zeros(3))
-
-
 def create_evaluation_csv(csv_path: Path, model_type: str) -> None:
     """
     Creates the header for the evaluation results CSV file.
-    
+
     Args:
         csv_path: Path to the CSV file.
         model_type: The type of the model.
     """
-    with open(csv_path, 'w') as f:
+    with open(csv_path, "w") as f:
         f.write(f"# MODEL_TYPE: {model_type}\n")
         # Write CSV header
         header = "rollout_idx,x,y,success,rollout_path,task_name,cylinder_prim_path,target_prim_path\n"
@@ -363,35 +339,35 @@ def create_evaluation_csv(csv_path: Path, model_type: str) -> None:
 def load_evaluation_progress(csv_path: Path) -> Tuple[pd.DataFrame, int]:
     """
     Loads evaluation progress from a CSV file.
-    
+
     Args:
         csv_path: Path to the CSV file.
-        
+
     Returns:
         (DataFrame, index of the next rollout to execute).
     """
     if not csv_path.exists():
         return pd.DataFrame(), 0
-    
+
     try:
-        df = pd.read_csv(csv_path, comment='#')
-        
+        df = pd.read_csv(csv_path, comment="#")
+
         # Check for required columns
-        required_cols = {'rollout_idx', 'x', 'y', 'success'}
+        required_cols = {"rollout_idx", "x", "y", "success"}
         if not required_cols.issubset(df.columns):
             Logger.warning("CSV file missing required columns. Starting fresh.")
             return pd.DataFrame(), 0
-        
+
         # Find unfinished rollouts
-        unfinished = df[df['success'] == -1]
+        unfinished = df[df["success"] == -1]
         if not unfinished.empty:
-            start_idx = unfinished['rollout_idx'].min()
+            start_idx = unfinished["rollout_idx"].min()
         else:
             # All are finished, start from the next one
-            start_idx = df['rollout_idx'].max() + 1 if not df.empty else 0
-        
+            start_idx = df["rollout_idx"].max() + 1 if not df.empty else 0
+
         return df, start_idx
-        
+
     except Exception as e:
         Logger.error(f"Failed to load evaluation progress: {e}")
         return pd.DataFrame(), 0
@@ -400,7 +376,7 @@ def load_evaluation_progress(csv_path: Path) -> Tuple[pd.DataFrame, int]:
 def save_evaluation_progress(all_results: List[Dict], csv_path: Path, model_type: str) -> None:
     """
     Saves evaluation progress to a CSV file.
-    
+
     Args:
         all_results: List of all evaluation results.
         csv_path: Path to the CSV file.
@@ -408,7 +384,7 @@ def save_evaluation_progress(all_results: List[Dict], csv_path: Path, model_type
     """
     try:
         df = pd.DataFrame(all_results)
-        with open(csv_path, 'w') as f:
+        with open(csv_path, "w") as f:
             f.write(f"# MODEL_TYPE: {model_type}\n")
             df.to_csv(f, index=False, header=True)
         Logger.debug(f"Progress saved to: {csv_path}")

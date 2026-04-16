@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import asyncio
 import omni.ui as ui
 from typing import Optional, Tuple, Set
 from utility.logger import Logger
@@ -25,6 +26,7 @@ class DataCollectionVisualizer:
 
     def __init__(
         self,
+        sim_app,
         window_width: int = 400,
         window_height: int = 400,
         grid_size: int = 20,
@@ -39,6 +41,7 @@ class DataCollectionVisualizer:
             grid_size: Pixel size of each grid point.
             dot_radius: Radius of the dot in pixels.
         """
+        self.sim_app = sim_app
         self.window_width = window_width
         self.window_height = window_height
         self.grid_size = grid_size
@@ -124,7 +127,11 @@ class DataCollectionVisualizer:
                 height=self.window_height,
                 position_x=100,
                 position_y=100,
+                visible=True,
+                dock_preference=ui.DockPreference.RIGHT_TOP,
             )
+
+            asyncio.ensure_future(self._dock_window(window_title=self.window.title))
 
             with self.window.frame:
                 with ui.VStack():
@@ -136,6 +143,20 @@ class DataCollectionVisualizer:
         except Exception as e:
             Logger.error(f"Failed to create visualization window: {e}")
             self.window = None
+
+    async def _dock_window(self, window_title: str):
+        """Docks the custom UI window to the property window."""
+        for _ in range(5):
+            if ui.Workspace.get_window(window_title):
+                break
+            await self.sim_app.next_update_async()
+
+        # dock next to properties window
+        custom_window = ui.Workspace.get_window(window_title)
+        property_window = ui.Workspace.get_window("Property")
+        if custom_window and property_window:
+            custom_window.dock_in(property_window, ui.DockPosition.SAME, 1.0)
+            custom_window.focus()
 
     def _get_cell_display_info(self, x: int, y: int, styles: dict) -> Tuple[str, dict]:
         """Gets the character and style for a grid cell."""

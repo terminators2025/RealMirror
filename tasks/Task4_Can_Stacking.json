@@ -173,7 +173,7 @@
                 "/scene/_05_tomato_soup_can"
             ],
             "scene_id": "taks_4",
-            "scene_usd": "/mnt/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task4_Can_Stacking/kitchen_with_parlor.usd",
+            "scene_usd": "/data/lzb/data/RealMirror_Benchmark_data/assets/scenes/Task4_Can_Stacking/kitchen_with_parlor.usd",
             "prime_path": "/scene",
             "camera_configs": {
                 "head_camera": {
@@ -213,7 +213,7 @@
             },
             "eval_cfg": {
                 "model": {
-                    "model_root_dir": "/mnt/data/lzb/data/RealMirror_Benchmark_data/models",
+                    "model_root_dir": "/data/lzb/data/RealMirror_Benchmark_data/models",
                     "checkpoints_dir": {
                         "ACT": "ACT",
                         "Diffusion": "Diffusion",

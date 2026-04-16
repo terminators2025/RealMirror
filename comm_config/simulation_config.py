@@ -13,11 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import json
-import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional, Dict, Any
 from pathlib import Path
 from utility.logger import Logger
+
 
 @dataclass
 class TaskRelatedObject:
@@ -27,7 +27,8 @@ class TaskRelatedObject:
     plate_prim_path: str
     basket_prim_path: str
     target_prim_path: str
-    
+
+
 @dataclass
 class SimulationConfig:
 

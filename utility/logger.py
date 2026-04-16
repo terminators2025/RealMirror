@@ -24,7 +24,8 @@ class ColoredFormatter(logging.Formatter):
     Custom log formatter that adds color to log levels.
     """
 
-    format_str = "%(asctime)s,%(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s"
+    format_str = "%(asctime)s.%(msecs)03d %(levelname)-2s [%(filename)s:%(lineno)d] %(message)s"
+    date_fmt = "%Y-%m-%d %H:%M:%S"
 
     FORMATS = {
         logging.DEBUG: str(Fore.CYAN) + format_str + str(Style.RESET_ALL),
@@ -37,7 +38,7 @@ class ColoredFormatter(logging.Formatter):
     def format(self, record):
         try:
             log_fmt = self.FORMATS.get(record.levelno)
-            formatter = logging.Formatter(log_fmt)
+            formatter = logging.Formatter(log_fmt, datefmt=self.date_fmt)
             return formatter.format(record)
         except Exception as e:
             # Fallback format if primary formatting fails

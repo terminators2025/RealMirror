@@ -14,9 +14,8 @@
 #    under the License.
 
 import numpy as np
-from typing import Optional, List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any
 import yaml
-import carb
 from omni.isaac.core.robots import Robot
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.stage import add_reference_to_stage
@@ -51,19 +50,43 @@ class A2Robot(BaseRobot):
 
         self.robot_descriptors = {}
 
-    def initialize(self, world, simulation_app, mode: str):
+    def _get_gripper_state(self, arm: str) -> int:
+        """Get gripper state for the specified arm.
 
-        Logger.info("Initializing A2 Robot...")
+        Args:
+            arm: Arm identifier ("left" or "right").
 
-        add_reference_to_stage(
-            usd_path=self.config.usd_path, prim_path=self.config.prim_path
-        )
-        self.robot_ref = world.scene.add(
-            Robot(prim_path=self.config.prim_path, name=self.config.name)
-        )
-        self.robot_view = ArticulationView(
-            prim_paths_expr=self.config.prim_path, name=f"{self.config.name}_view"
-        )
+        Returns:
+            Current gripper state.
+
+        Raises:
+            ValueError: If gripper is not initialized for the arm.
+        """
+        state = self.gripper_states.get(arm)
+        if state is None:
+            raise ValueError(f"Gripper for {arm} arm is not initialized. Call setup_gripper() first.")
+        return state
+
+    def _set_gripper_state(self, arm: str, state: int):
+        """Set gripper state for the specified arm.
+
+        Args:
+            arm: Arm identifier ("left" or "right").
+            state: New gripper state.
+        """
+        self.gripper_states[arm] = state
+
+    def initialize(self, world, simulation_app, mode: str, env_index: int = 0):
+        Logger.info(f"Initializing A2 Robot (env_index={env_index})...")
+
+        if mode == "multi_env":
+            self.__initialize_on_multi_env(world, simulation_app, mode, env_index)
+            return
+
+        add_reference_to_stage(usd_path=self.config.usd_path, prim_path=self.config.prim_path)
+        robot_name = f"{self.config.name}_env{env_index}" if env_index > 0 else self.config.name
+        self.robot_ref = world.scene.add(Robot(prim_path=self.config.prim_path, name=robot_name))
+        self.robot_view = ArticulationView(prim_paths_expr=self.config.prim_path, name=f"{robot_name}_view")
         world.reset()
 
         for _ in range(10):
@@ -73,10 +96,12 @@ class A2Robot(BaseRobot):
         self.robot_ref.initialize()
         self.robot_view.initialize()
 
-        if mode == 'teleop':
+        if mode == "teleop":
             self._setup_finger_physics_attr()
         self._setup_physics_gains()
+
         self._create_fixed_joint(world)
+
         self._set_initial_joint_positions()
         for _ in range(10):
             world.step(render=False)
@@ -91,6 +116,28 @@ class A2Robot(BaseRobot):
         self.is_initialized = True
         Logger.info("A2 Robot initialized successfully")
 
+    def __initialize_on_multi_env(self, world, simulation_app, mode: str, env_index: int = 0):
+
+        add_reference_to_stage(usd_path=self.config.usd_path, prim_path=self.config.prim_path)
+
+        robot_name = f"{self.config.name}_env{env_index}" if env_index > 0 else self.config.name
+        self.robot_ref = world.scene.add(Robot(prim_path=self.config.prim_path, name=robot_name))
+        self.robot_view = ArticulationView(prim_paths_expr=self.config.prim_path, name=f"{robot_name}_view")
+
+        self.robot_ref.initialize()
+        self.robot_view.initialize()
+        self._setup_physics_gains()
+        self._set_initial_joint_positions()
+
+        world.step(render=False)
+
+        self.setup_gripper("left")
+        self.setup_gripper("right")
+
+        self._initialize_wrist_control()
+
+        self.is_initialized = True
+
     def _setup_finger_physics_attr(self):
 
         all_dof_prim_paths = self.robot_view._dof_paths
@@ -100,10 +147,7 @@ class A2Robot(BaseRobot):
             dof_paths_for_robot = all_dof_prim_paths[0]
             for path in dof_paths_for_robot:
                 joint_prim = stage.GetPrimAtPath(path)
-                if (
-                    joint_prim.IsValid()
-                    and joint_prim.GetName() in self.config.finger_joint_names
-                ):
+                if joint_prim.IsValid() and joint_prim.GetName() in self.config.finger_joint_names:
                     drive = UsdPhysics.DriveAPI.Apply(joint_prim, "angular")
                     if drive:
                         drive.GetStiffnessAttr().Set(self.config.finger_kp)
@@ -172,9 +216,7 @@ class A2Robot(BaseRobot):
         self._load_robot_descriptors()
         for arm_desc in self.robot_descriptors.values():
             if arm_desc:
-                for name, value in zip(
-                    arm_desc.get("cspace", []), arm_desc.get("default_q", [])
-                ):
+                for name, value in zip(arm_desc.get("cspace", []), arm_desc.get("default_q", [])):
                     idx = self.robot_ref.get_dof_index(name)
                     if idx != -1 and idx < num_joints:
                         joint_positions[idx] = value
@@ -214,13 +256,11 @@ class A2Robot(BaseRobot):
             open_angles[0] = np.deg2rad(90.0)
 
         self.gripper_current_angles[arm] = open_angles
-        self.gripper_states[arm] = self.GRIPPER_STATE_OPEN
+        self._set_gripper_state(arm, self.GRIPPER_STATE_OPEN)
 
         # Apply initial gripper state
         if self.gripper_dof_indices[arm]["all"]:
-            self.apply_joint_positions(
-                open_angles, self.gripper_dof_indices[arm]["all"]
-            )
+            self.apply_joint_positions(open_angles, self.gripper_dof_indices[arm]["all"])
 
         Logger.info(f"{arm} gripper initialized with {len(all_joints)} joints")
 
@@ -232,13 +272,9 @@ class A2Robot(BaseRobot):
                 idx = self.get_dof_index(joint_name)
                 if idx != -1:
                     self.wrist_dof_indices[arm][joint_type] = idx
-                    Logger.info(
-                        f"Found {arm} wrist {joint_type} joint: {joint_name} (idx: {idx})"
-                    )
+                    Logger.info(f"Found {arm} wrist {joint_type} joint: {joint_name} (idx: {idx})")
                 else:
-                    Logger.error(
-                        f"Could not find {arm} wrist {joint_type} joint: {joint_name}"
-                    )
+                    Logger.error(f"Could not find {arm} wrist {joint_type} joint: {joint_name}")
 
     def _create_fixed_joint(self, world):
 
@@ -274,23 +310,23 @@ class A2Robot(BaseRobot):
         if not self.robot_ref or not self.robot_ref.is_valid():
             return
 
-        # Process action
-        if action == "toggle":
-            if self.gripper_states[arm] == self.GRIPPER_STATE_OPEN:
-                self.gripper_states[arm] = self.GRIPPER_STATE_CLOSING_S1
-            elif self.gripper_states[arm] == self.GRIPPER_STATE_CLOSED:
-                self.gripper_states[arm] = self.GRIPPER_STATE_OPENING
-        elif action == "open":
-            self.gripper_states[arm] = self.GRIPPER_STATE_OPENING
-        elif action == "close":
-            self.gripper_states[arm] = self.GRIPPER_STATE_CLOSING_S1
+        current_state = self._get_gripper_state(arm)
 
-        # Update gripper animation
+        if action == "toggle":
+            if current_state == self.GRIPPER_STATE_OPEN:
+                self._set_gripper_state(arm, self.GRIPPER_STATE_CLOSING_S1)
+            elif current_state == self.GRIPPER_STATE_CLOSED:
+                self._set_gripper_state(arm, self.GRIPPER_STATE_OPENING)
+        elif action == "open":
+            self._set_gripper_state(arm, self.GRIPPER_STATE_OPENING)
+        elif action == "close":
+            self._set_gripper_state(arm, self.GRIPPER_STATE_CLOSING_S1)
+
         self._update_gripper_animation(arm, dt)
 
     def _update_gripper_animation(self, arm: str, dt: float):
 
-        state = self.gripper_states[arm]
+        state = self._get_gripper_state(arm)
 
         if state == self.GRIPPER_STATE_OPEN or state == self.GRIPPER_STATE_CLOSED:
             return
@@ -326,11 +362,7 @@ class A2Robot(BaseRobot):
             # Find the index in the full list
             full_idx = self.gripper_all_joint_names[arm].index(joint_name)
             current = current_angles[full_idx]
-            target = (
-                target_angles[i]
-                if state != self.GRIPPER_STATE_OPENING
-                else target_angles[full_idx]
-            )
+            target = target_angles[i] if state != self.GRIPPER_STATE_OPENING else target_angles[full_idx]
 
             error = target - current
             if abs(error) < self.config.gripper_convergence_threshold:
@@ -356,11 +388,11 @@ class A2Robot(BaseRobot):
 
         if all_converged:
             if state == self.GRIPPER_STATE_CLOSING_S1:
-                self.gripper_states[arm] = self.GRIPPER_STATE_CLOSING_S2
+                self._set_gripper_state(arm, self.GRIPPER_STATE_CLOSING_S2)
             elif state == self.GRIPPER_STATE_CLOSING_S2:
-                self.gripper_states[arm] = self.GRIPPER_STATE_CLOSED
+                self._set_gripper_state(arm, self.GRIPPER_STATE_CLOSED)
             elif state == self.GRIPPER_STATE_OPENING:
-                self.gripper_states[arm] = self.GRIPPER_STATE_OPEN
+                self._set_gripper_state(arm, self.GRIPPER_STATE_OPEN)
 
     def update_wrist_control(self, arm: str, control_type: str, value: Any, dt: float):
 
@@ -416,9 +448,7 @@ class A2Robot(BaseRobot):
 
     def get_end_effector_pose(self, arm: str) -> Tuple[np.ndarray, np.ndarray]:
 
-        ee_link_path = (
-            f"{self.config.prim_path}/raise_a2_t2d0_flagship/{arm}_arm_link07"
-        )
+        ee_link_path = f"{self.config.prim_path}/raise_a2_t2d0_flagship/{arm}_arm_link07"
         try:
             return get_world_pose(ee_link_path)
         except Exception as e:
@@ -427,10 +457,10 @@ class A2Robot(BaseRobot):
 
     def get_end_effector_link_path(self, arm: str) -> str:
         """Get the end effector link path for the specified arm.
-        
+
         Args:
             arm: Arm identifier ("left" or "right").
-            
+
         Returns:
             Full prim path to the end effector link.
         """

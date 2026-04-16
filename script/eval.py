@@ -15,6 +15,7 @@
 
 import argparse
 
+
 parser = argparse.ArgumentParser(description="Run evaluation for trained models in Isaac Sim")
 parser.add_argument("--task", type=str, default="Task1_Kitchen_Cleanup", help="Task configuration name")
 parser.add_argument(
@@ -24,7 +25,9 @@ parser.add_argument(
     choices=["act", "diffusion", "smolvla"],
     help="Type of model to use",
 )
-parser.add_argument("--model-path", type=str, help="Path to pretrained model")
+parser.add_argument(
+    "--model-path", type=str, default="", help="Path to pretrained model (not required when using --use-grpc)"
+)
 parser.add_argument("--headless", action="store_true", help="Run in headless mode without GUI")
 parser.add_argument(
     "--arc2gear",
@@ -80,7 +83,30 @@ parser.add_argument(
     help="UI resolution (e.g., 1920x1080, 1280x720)",
 )
 
+# gRPC remote inference options
+parser.add_argument(
+    "--use-grpc",
+    action="store_true",
+    help="Use gRPC remote inference instead of local inference",
+)
+parser.add_argument(
+    "--grpc-server",
+    type=str,
+    default="localhost:50055",
+    help="gRPC server address (host:port)",
+)
+parser.add_argument(
+    "--grpc-timeout",
+    type=float,
+    default=300.0,
+    help="gRPC request timeout in seconds",
+)
+
 args = parser.parse_args()
+
+# Validate arguments
+if args.use_grpc and args.model_path:
+    parser.error("--model-path should not be specified when using --use-grpc (model runs on remote server)")
 
 from typing import Optional
 from isaacsim.simulation_app import SimulationApp
@@ -98,6 +124,7 @@ simulation_app = SimulationApp(
     }
 )
 
+from utility import PrimUtils
 from comm_config.eval_config import EvalConfig
 import json
 import os
@@ -117,7 +144,7 @@ from comm_config.simulation_config import SimulationConfig
 from comm_config.camera_config import CameraConfig
 from robots.robot_factory import RobotFactory
 from simulation.scene_manager import SceneManager
-from inference import UnitConverter, ModelLoader, InferenceEngine, InferenceConfig
+from inference import UnitConverter, ModelLoader, InferenceEngine, InferenceConfig, RemoteInferenceEngine
 from utility.logger import Logger
 from utility.camera_utils import get_camera_image
 from utility.plotting_utils import (
@@ -131,7 +158,6 @@ from evaluate.inference_evaluator import (
     object_is_stably_stacked,
     log_object_reached_target_details,
     save_frames_to_video,
-    move_prim_safely,
     load_evaluation_progress,
     save_evaluation_progress,
 )
@@ -255,6 +281,8 @@ class EvaluationRunner:
             self.fixed_objects_info = self.task_config["scene"][0]["fix_objects_info"]
 
     def _setup_joint_indices(self):
+        if self.robot is None:
+            raise RuntimeError("Robot not initialized")
         all_dof_names = self.robot.get_dof_names()
         if not all_dof_names:
             raise RuntimeError("Failed to get robot DOF names")
@@ -331,17 +359,21 @@ class EvaluationRunner:
             raise
 
     def _setup_inference(self):
-        model_path = self.args.model_path
         if self.eval_config and self.eval_config.models_path:
             models_path_lower = {k.lower(): v for k, v in self.eval_config.models_path.items()}
             model_path = models_path_lower.get(self.args.model_type.lower(), self.args.model_path)
+        model_path = self.args.model_path if self.args.model_path else model_path
         Logger.info(f"Model[{self.args.model_type.lower()}] path: {model_path}")
+
         inference_config = InferenceConfig(
             model_type=self.args.model_type,
-            model_path=model_path,
+            model_path=(model_path or "") if not self.args.use_grpc else "",
             use_gear_conversion=self.args.arc2gear,
             num_actions_in_chunk=self.args.num_actions,
             task_name=None,
+            use_grpc=self.args.use_grpc,
+            grpc_server_address=self.args.grpc_server,
+            grpc_timeout=self.args.grpc_timeout,
         )
 
         self.unit_converter = UnitConverter(
@@ -349,27 +381,52 @@ class EvaluationRunner:
             max_gear=inference_config.max_gear,
         )
 
-        model_loader = ModelLoader(
-            model_type=inference_config.model_type,
-            model_path=inference_config.model_path,
-        )
+        # Choose inference mode based on configuration
+        if inference_config.use_grpc:
+            Logger.info(f"Using gRPC remote inference: {inference_config.grpc_server_address}")
 
-        if not model_loader.load_model():
-            raise RuntimeError("Failed to load inference model")
+            # Setup remote inference engine
+            self.inference_engine = RemoteInferenceEngine(
+                server_address=inference_config.grpc_server_address,
+                unit_converter=self.unit_converter,
+                num_actions_in_chunk=inference_config.num_actions_in_chunk,
+                timeout=inference_config.grpc_timeout,
+            )
 
-        self.inference_engine = InferenceEngine(
-            model_loader=model_loader,
-            unit_converter=self.unit_converter,
-            num_actions_in_chunk=inference_config.num_actions_in_chunk,
-            image_resolution=inference_config.image_resolution,
-        )
+            # Connect to remote server
+            if not self.inference_engine.connect():
+                raise RuntimeError(
+                    f"Failed to connect to gRPC inference server at {inference_config.grpc_server_address}"
+                )
 
+            Logger.info("Connected to gRPC inference server")
+        else:
+            Logger.info("Using local inference")
+
+            # Setup local inference engine
+            model_loader = ModelLoader(
+                model_type=inference_config.model_type,
+                model_path=inference_config.model_path,
+            )
+
+            if not model_loader.load_model():
+                raise RuntimeError("Failed to load inference model")
+
+            self.inference_engine = InferenceEngine(
+                model_loader=model_loader,
+                unit_converter=self.unit_converter,
+                num_actions_in_chunk=inference_config.num_actions_in_chunk,
+                image_resolution=inference_config.image_resolution,
+            )
+
+        # Store config for later use
+        self.inference_config = inference_config
         Logger.info("Inference components initialized")
 
     def _setup_task_configurations(self):
         if not self.scene_manager:
             Logger.error("SceneManager not initialized")
-            raise RuntimeError(f"SceneManager not initialized")
+            raise RuntimeError("SceneManager not initialized")
 
         if self.sim_config and self.sim_config.task_related_objects:
             for obj_info in self.sim_config.task_related_objects:
@@ -449,7 +506,7 @@ class EvaluationRunner:
             initial_pose = self.pristine_initial_poses.get(path)
             if initial_pose:
                 Logger.info(f"  [Reset] Moving {path} to initial position")
-                move_prim_safely(prim, initial_pose[0], initial_pose[1])
+                PrimUtils.move_prim_safely(prim, initial_pose[0], initial_pose[1])
 
     def setup_rollout_environment(self, rollout_idx: int):
 
@@ -465,7 +522,7 @@ class EvaluationRunner:
 
         for path, prim in self.all_task_prims.items():
             Logger.info(f"Prim {path} moved safely Area.")
-            move_prim_safely(prim, np.array([999.0, 999.0, 999.0]), np.array([1.0, 0.0, 0.0, 0.0]))
+            PrimUtils.move_prim_safely(prim, np.array([999.0, 999.0, 999.0]), np.array([1.0, 0.0, 0.0, 0.0]))
 
         if rollout_idx < len(self.evaluation_points):
             point = self.evaluation_points[rollout_idx]
@@ -487,14 +544,14 @@ class EvaluationRunner:
                     if self.fixed_objects_info:
                         for fix_obj in self.fixed_objects_info:
                             if fix_obj.get("prim_path") == current_active_obj_prime:
-                                move_prim_safely(
+                                PrimUtils.move_prim_safely(
                                     active_prim,
                                     np.array(fix_obj.get("position")),
                                     np.array(fix_obj.get("orientation")),
                                 )
                                 Logger.info(f"- Placed object[{current_active_obj_prime}] at fixed position")
                     elif pristine_pose:
-                        move_prim_safely(active_prim, pristine_pose[0], pristine_pose[1])
+                        PrimUtils.move_prim_safely(active_prim, pristine_pose[0], pristine_pose[1])
                         Logger.info(f"- Placed object[{current_active_obj_prime}] at initial position")
 
             for active_object_prim_path in self.sim_config.sampled_active_object:
@@ -505,7 +562,7 @@ class EvaluationRunner:
                         new_pos = np.copy(pristine_pose[0])
                         new_pos[0] = point[0]
                         new_pos[1] = point[1]
-                        move_prim_safely(active_prim, new_pos, pristine_pose[1])
+                        PrimUtils.move_prim_safely(active_prim, new_pos, pristine_pose[1])
                         Logger.info(
                             f"- Placed active object[{active_object_prim_path}] at [{point[0]:.2f}, {point[1]:.2f}]"
                         )
@@ -883,7 +940,7 @@ class EvaluationRunner:
         for object_cfg in self.task_configurations:
             if "cylinder_prim_path" in object_cfg:
                 if object_cfg["cylinder_prim_path"] in self.all_task_prims.keys():
-                    move_prim_safely(
+                    PrimUtils.move_prim_safely(
                         self.all_task_prims[object_cfg["cylinder_prim_path"]],
                         np.array([999.0, 999.0, 999.0]),
                         np.array([1.0, 0.0, 0.0, 0.0]),
@@ -892,7 +949,7 @@ class EvaluationRunner:
 
             if "plate_prim_path" in object_cfg:
                 if object_cfg["plate_prim_path"] in self.all_task_prims.keys():
-                    move_prim_safely(
+                    PrimUtils.move_prim_safely(
                         self.all_task_prims[object_cfg["plate_prim_path"]],
                         np.array([999.0, 999.0, 999.0]),
                         np.array([1.0, 0.0, 0.0, 0.0]),
@@ -949,7 +1006,7 @@ class EvaluationRunner:
         if cylinder_path and cylinder_path in self.all_task_prims:
             pristine_pose = self.pristine_initial_poses.get(cylinder_path)
             if pristine_pose:
-                move_prim_safely(
+                PrimUtils.move_prim_safely(
                     self.all_task_prims[cylinder_path],
                     pristine_pose[0],
                     pristine_pose[1],
@@ -958,7 +1015,7 @@ class EvaluationRunner:
         if plate_path and plate_path in self.all_task_prims:
             pristine_pose = self.pristine_initial_poses.get(plate_path)
             if pristine_pose:
-                move_prim_safely(self.all_task_prims[plate_path], pristine_pose[0], pristine_pose[1])
+                PrimUtils.move_prim_safely(self.all_task_prims[plate_path], pristine_pose[0], pristine_pose[1])
 
     def _check_all_task3_subtasks_complete(self):
         """Check if all Task3 subtasks are completed"""
@@ -1093,8 +1150,20 @@ class EvaluationRunner:
         Logger.info(f"All visualizations saved to: {self.output_dir}")
 
     def shutdown(self):
-        Logger.info("Shutting down evaluation runner...")
-        self.world.stop()
+        """Clean shutdown."""
+        Logger.info("Shutting down evaluation environment...")
+
+        # Disconnect from gRPC server if using remote inference
+        if hasattr(self, "inference_config") and self.inference_config.use_grpc:
+            if hasattr(self, "inference_engine"):
+                try:
+                    self.inference_engine.disconnect()
+                    Logger.info("Disconnected from gRPC server")
+                except Exception as e:
+                    Logger.warning(f"Error disconnecting from gRPC server: {e}")
+
+        if self.world:
+            self.world.stop()
         simulation_app.close()
         Logger.info("Shutdown complete")
 
