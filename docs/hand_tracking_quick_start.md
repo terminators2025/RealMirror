@@ -4,11 +4,6 @@ Download `realmirror_hand_tracking.apk` from the release page:
 
 👉 **[https://github.com/terminators2025/RealMirror-hand-tracking-application](https://github.com/terminators2025/RealMirror-hand-tracking-application)**
 
-
-<p align="center">
-  <img src="image/HandTrackShow.gif" alt="Hand Tracking Demo" style="width: 75%;">
-</p>
-
 ## 2. Configure the Server IP
 
 On the headset, create (do **not** modify an existing file — create a new one) the server config file at:
@@ -41,6 +36,9 @@ Before starting teleoperation, confirm the data is arriving correctly:
 ```bash
 python tools/hand_tracking_visualizer/visualize_hand_tracking.py --port 8090
 ```
+<p align="center">
+  <img src="image/HandTrackShow.gif" alt="Hand Tracking Demo" style="width: 75%;">
+</p>
 
 A live 3D skeleton should appear in the Matplotlib window. See [`tools/hand_tracking_visualizer/README.md`](../tools/hand_tracking_visualizer/README.md) for details and troubleshooting.
 
