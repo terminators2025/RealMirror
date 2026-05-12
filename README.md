@@ -31,9 +31,9 @@
 
 # *Opensource Plan
 **Before April  25, 2026**
- - [ ] Seed2Scale example assets
- - [ ] Seed2Scale example datasets
- - [ ] Datasets visual physics playback tools
+ - [x] Seed2Scale example assets
+ - [x] Seed2Scale example datasets
+ - [x] Datasets visual physics playback tools
  - [x] MirrorLimb hand tracking feature
        
 **Before October 15, 2025**
