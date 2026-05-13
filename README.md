@@ -2,7 +2,7 @@
   <img src="./docs/image/zte_logo.png" alt="ZTE Agibot Logo" width="128" />
 </div>
 
-![teaser.png](./docs/image/poster.png)
+![teaser.png](./docs/image/poster.jpg)
 
 <div align="center">
   <a href="https://arxiv.org/abs/2509.14687">
