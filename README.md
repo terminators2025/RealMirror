@@ -543,6 +543,3 @@ If you find this work helpful in your research, please consider giving this repo
   year={2025}
 }
 ```
-#
-####Star History
-####[![Star History Chart](https://api.star-history.com/svg?repos=terminators2025/RealMirror&type=date&legend=top-left)](https://www.star-history.com/#terminators2025/RealMirror&type=date&legend=top-left)
