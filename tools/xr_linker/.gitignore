@@ -1,6 +1,18 @@
-# 环境变量
+# Dependencies
+node_modules/
+
+# Environment configuration
 .env
 
-# 日志文件
+# Logs
 logs/
 *.log
+
+# Runtime data written by the server (contains live controller poses)
+data/
+
+# Locally generated self-signed certificates (see scripts/gen_cert.sh)
+cert/*.pem
+
+# Test artifacts
+coverage/

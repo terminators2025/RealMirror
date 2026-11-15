@@ -12,7 +12,23 @@ cd tools/xr_linker
 npm install
 ```
 
-### 1.2 Configure the Server (Optional)
+### 1.2 Generate the Local Certificate
+
+XR-Linker serves WebXR over HTTPS, and XR requires a secure context, so a certificate must exist before the server can start. Certificates are **not** shipped with the repository; generate a local self-signed pair:
+
+```bash
+npm run gen-cert
+```
+
+The script detects the workstation's LAN IP and embeds it in the certificate's subject alternative name. Pin it explicitly when auto-detection picks the wrong interface:
+
+```bash
+bash scripts/gen_cert.sh 192.168.1.105
+```
+
+If the workstation IP changes later, regenerate with `bash scripts/gen_cert.sh --force`. Generated files land in `cert/` and are git-ignored.
+
+### 1.3 Configure the Server (Optional)
 Copy `.env.example` to `.env` and modify as needed:
 
 ```bash
@@ -34,14 +50,29 @@ LOG_DIR=./logs
 LOG_MAX_FILES=14d
 LOG_MAX_SIZE=20m
 
-# Data storage configuration
-DATA_STORAGE_ENABLED=true
+# Data storage configuration (single latest-frame file, replaced atomically)
 DATA_STORAGE_DIR=./data
-DATA_STORAGE_MAX_FILES=100
 
 # Socket.IO configuration
 SOCKET_CORS_ORIGIN=*
 ```
+
+### 1.4 Start the Server
+
+Run from `tools/xr_linker/` — the data directory is resolved relative to the working directory, and the simulator expects to find the shared file under `tools/xr_linker/data/`:
+
+```bash
+npm start
+```
+
+You should see the resolved data path in the startup log:
+
+```bash
+Data storage service initialized {"dataPath":"data/live_pico_data.json"}
+```
+
+> **Note**: `npm start` runs `node src/server/index.js` directly from source. Node.js 18 or newer is required.
+
 ## 2. Connect the XR Device
 Next steps:
 
@@ -56,7 +87,7 @@ Next steps:
    > **Note 2**: You may see a warning page. Click **Advanced**, then **Proceed to IP (unsafe)**.
 
    <p align="center">
-     <a href="image/WarnPrivate.jpg">
+     <a href="image/WebXRPrivate.jpg">
        <img src="image/WebXRPrivate.jpg" alt="web_unsafe" style="width: 50%;">
      </a>
    </p>

@@ -22,26 +22,22 @@
 
 ---
 - **[coming soon]** We are about to provide a sample dataset for trajectory automatic generation based on Seed2Scale scheme, as well as corresponding visual physics playback tools and quantitative evaluation results to help users quickly understand the powerful performance and accuracy of our scheme. Check it out: [Example Project](https://github.com/terminators2025/Seed2Scale-Example)
+- **[2026-11-15]** The **complete teleoperation stack is now open source**. Both halves — the Isaac Sim-side control stack (`controllers/`, `teleoperation/`, `hand_tracking/`) and the XR-Linker WebXR transport (`tools/xr_linker/`) — ship as readable source instead of compiled artifacts. See *§2.5 Teleoperation* for the architecture and [teleoperation_architecture.md](docs/teleoperation_architecture.md) for how controller data reaches the simulator.
 - **[2026-04-13]** Please check our latest homepage about Seed2Scale！[Seed2Scale Homepage](https://terminators2025.github.io/Seed2Scale.github.io/)
 - **[2026-03-09]** We have launched an automatic large-scale upper limb trajectory generation scheme based on the RealMirror platform **Seed2Scale**, which provides a mode based generation paradigm with SOTA performance. Please refer to our paper for details！Check it out: [Paper](https://arxiv.org/abs/2603.08260).
 - **[2025-11-12]** [MirrorLimb](https://arxiv.org/abs/2511.08865) with the addition of gesture teleoperation functionality. you can use PICO to perform more precise and stable control of the robot！Check it out: [Feature Introduction](https://github.com/terminators2025/RealMirror/blob/main/docs/hand_tracking_quick_start.md).
 - **[2025-10-30]** We have released a teleoperation/data acquisition framework and toolchain related to RealMirror.
-- **[2025-10-15]** We have released the RealMirror related evaluation framework, official model weights, and robot/scene assets. 
+- **[2025-10-15]** We have released the RealMirror related evaluation framework, official model weights, and robot/scene assets.
 - **[2025-09-15]** Excited to release the **RealMirror** paper! Check it out: [Paper](https://arxiv.org/abs/2509.14687).
 
 # *Opensource Plan
-**Before April  25, 2026**
+**2026-11-15 — scope update:** the teleoperation stack (`controllers/`, `teleoperation/`, `hand_tracking/`, plus the XR-Linker WebXR transport) moved to source distribution. This was not part of the original plan.
+
+**Before April 25, 2026**
+ - [x] MirrorLimb hand tracking feature
  - [x] Seed2Scale example assets
  - [x] Seed2Scale example datasets
  - [x] Datasets visual physics playback tools
- - [x] MirrorLimb hand tracking feature
-       
-**Before October 15, 2025**
- - [x] Inference code
- - [x] Evaluation code
- - [x] Agibot A2 robot model
- - [x] Scene assets
- - [x] Checkpoints
 
 **Before October 30, 2025**
  - [x] Training code
@@ -49,6 +45,13 @@
  - [x] Data collection
  - [x] Teleoperation
  - [x] Toolchains
+
+**Before October 15, 2025**
+ - [x] Inference code
+ - [x] Evaluation code
+ - [x] Agibot A2 robot model
+ - [x] Scene assets
+ - [x] Checkpoints
 
 # 1. Overview
 The emerging field of Vision-Language-Action (VLA) for humanoid robots faces several fundamental challenges, including the high cost of data acquisition, the lack of a standardized benchmark, and the significant gap between simulation and the real world. To overcome these obstacles, we propose RealMirror, a comprehensive, open-source embodied AI VLA platform. RealMirror builds an efficient, low-cost data collection, model training, and inference system that enables end-to-end VLA research without requiring a real robot. To facilitate model evolution and fair comparison, we also introduce a dedicated VLA benchmark for humanoid robots, featuring multiple scenarios, extensive trajectories, and various VLA models. Furthermore, by integrating generative models and 3D Gaussian Splatting to reconstruct realistic environments and robot models, we successfully demonstrate zero-shot Sim2Real transfer, where models trained exclusively on simulation data can perform tasks on a real robot seamlessly, without any fine-tuning. In conclusion, with the unification of these critical components, RealMirror provides a robust framework that significantly accelerates the development of VLA models for humanoid robots.
@@ -141,6 +144,13 @@ $isaac_sim_dir/python.sh -m pip install -e .
 $isaac_sim_dir/python.sh -m pip install -e .
 ```
 
+> **Upgrading from an older clone?** Earlier releases shipped `controllers/`, `teleoperation/` and `hand_tracking/` as compiled `.so` modules. Remove any leftovers so Python imports the published sources instead:
+>
+> ```bash
+> find controllers teleoperation hand_tracking -name '*.so' -delete
+> find . -name '__pycache__' -type d -prune -exec rm -rf {} +
+> ```
+
 ### 2.4 Usage
 
 ### 2.4 Benchmark Tasks
@@ -215,7 +225,7 @@ For each task configuration file (Task1_Kitchen_Cleanup.json, Task2_Cup_to_Cup_T
   ```json
   "scene_usd": "/path/to/your/RealMirror_Benchmark_data/assets/scenes/Task1_Kitchen_Cleanup/kitchen.usd"
   ```
-  
+
 - **Model root directory**: Point to the models directory
   ```json
   "model_root_dir": "/path/to/your/RealMirror_Benchmark_data/models"
@@ -323,6 +333,8 @@ RealMirror supports two teleoperation modes. Choose based on your use case:
 | **Pico VR Controller** | 6-DoF handheld controllers | XR-Linker running |
 | **Hand Tracking** | Bare-hand gesture tracking | RealMirror APK installed on headset |
 
+Both modes drive the same stack — mapping → `TeleopManager` → IK → recording — and differ only in how controller data reaches the simulator. For the two input paths, the module behind each layer and the shared `live_pico_data.json` contract, see <a href="docs/teleoperation_architecture.md">teleoperation_architecture.md</a>.
+
 #### 2.5.1 Pico VR Controller
 
 **Step 1 — Start XR-Linker**
@@ -334,6 +346,8 @@ See <a href="docs/xr_linker_quik_start.md">xr_linker_quik_start.md</a> for instr
 ```bash
 $isaac_sim_dir/python.sh script/teleop.py --hide_ik_targets --task Task1_Kitchen_Cleanup --output-dir /data/record
 ```
+
+If you moved XR-Linker's data directory, point the simulation at it explicitly with `--pico-json-path <path>/live_pico_data.json`. When the path is wrong the controller silently yields no input, so verify the file is being updated before assuming a simulator problem.
 
 #### 2.5.2 Hand Tracking (Gesture-based Teleoperation)
 
@@ -432,7 +446,7 @@ Alternatively, you can set up a Python or Conda virtual environment:
    # Using Python venv
    python3 -m venv realmirror_train_env
    source realmirror_train_env/bin/activate
-   
+
    # Or using Conda
    conda create -n realmirror_train_env python=3.10
    conda activate realmirror_train_env

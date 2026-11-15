@@ -1,17 +1,38 @@
 {
+  "type": "module",
   "name": "xr_linker",
-  "version": "1.0.0",
-  "description": "XR Linker - A real-time communication framework for XR devices.",
-  "main": "loader.js",
-  "scripts": {
-    "start": "node loader.js"
+  "version": "2.0.0",
+  "description": "XR Linker - a real-time WebXR teleoperation transport between XR devices and the Isaac Sim workstation.",
+  "main": "src/server/index.js",
+  "engines": {
+    "node": ">=18"
   },
+  "scripts": {
+    "start": "node src/server/index.js",
+    "dev": "node --watch src/server/index.js",
+    "gen-cert": "bash scripts/gen_cert.sh",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+  },
+  "keywords": [
+    "webxr",
+    "teleoperation",
+    "isaac-sim",
+    "robotics",
+    "socket.io"
+  ],
+  "license": "Apache-2.0",
   "dependencies": {
-    "bytenode": "^1.5.7",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "socket.io": "^4.7.1",
     "winston": "^3.18.3",
     "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "socket.io-client": "^4.8.1"
   }
 }
